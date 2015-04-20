@@ -1,4 +1,4 @@
--- xml.lua - provides function for working with xml files.
+-- xml.lua - The class provides function for working with xml files.
 -- Copyright (C) 2015 Pavel Vomacka
 --
 -- This program is free software:  you can redistribute it and/or modify it
@@ -15,23 +15,36 @@
 
 -- TBD: default return values when no element is found
 
--- Define the module:
-local xml = {
-  file = nil,
-  xinclude = 1 -- Default value is 1, that means that xincludes are used. For turn it off set this variable to '0'.
-}
+-- Define the class:
+xml = {}
+xml.__index = xml
 
 
 --
---- Main function that has to be called before using any other functions in this module.
+--- Constructor. File_name has to be set. 
 --
 --  @param file_name Name of file which will be parsed.
---  @param xinclude Enables (1) or disables (0) xincludes.
-function xml.setFile(file_name, xinclude)
-  xml.file = file_name
-  if xinclude ~= nil then
-    xml.xinclude = xinclude
+--  @param xinclude Enables (1) or disables (0) xincludes. Optional.
+function xml.create(file_name, xinclude)
+  if file_name == nil then 
+    fail("File name has to be set when you want to create new object of class xml.")
+    return nil
   end
+  
+  -- Set default value of xinclude.
+  local x = {["xinclude"]=1}
+  
+  -- Add this class as metatable of new created object (table).
+  setmetatable(x, xml)
+  x.file = file_name
+  
+  -- Set xinclude if xinclude is set.
+  if xinclude ~= nil then
+    x.xinclude = xinclude
+  end
+  
+  -- Return new object
+  return x
 end
 
 
@@ -39,14 +52,13 @@ end
 --- Function that check whether variables are set.
 --
 -- @return false when variable isn't set
-function xml.checkFileVariable() 
-  
+function xml:checkFileVariable() 
   -- Check whether file is set and whether file exists.
-  if xml.file == nil then
+  if self.file == nil then
     fail("File was not set.")
     return false
-  elseif not path.file_exists(xml.file) then
-    fail("File '" .. xml.file .. "' does not exist.")
+  elseif not path.file_exists(self.file) then
+    fail("File '" .. self.file .. "' does not exist.")
     return false
   end
   
@@ -59,7 +71,7 @@ end
 --  
 --  @param element name of the element which will be found. 
 --  @return composed XPath as string. 
-function xml.composeXPathElement(element, namespace)
+function xml:composeXPathElement(element, namespace)
   if not element then
     return nil
   end
@@ -82,7 +94,7 @@ end
 -- 
 --  @param attribute name of the attribute which will be found. 
 --  @return composed XPath as string.
-function xml.composeXPathAttribute(attribute, namespace)
+function xml:composeXPathAttribute(attribute, namespace)
   if not attribute then
     return nil
   end
@@ -106,7 +118,7 @@ end
 --  @param attribute name of attribute
 --  @param element name of element
 --  @param namespace namespace url. Optional.
-function xml.composeXPathAttributeElement(attribute, element, namespace)
+function xml:composeXPathAttributeElement(attribute, element, namespace)
   if not attribute or not element then
     return nil
   end
@@ -130,9 +142,9 @@ end
 --  @param namespace (if there is no namespace, then set this argument to empty string). For example: r=http://example.namespace.com
 --  @param xpath defines path to the elements. If namespace is defined then use namespace prefix.
 --  @return table where each item is content of one element. Otherwise, it returns nil.
-function xml.parseXml(xpath, namespace)
+function xml:parseXml(xpath, namespace)
   -- Check whether file name is set.
-  if not xml.checkFileVariable() then
+  if not self:checkFileVariable() then
     return nil
   end
   
@@ -155,12 +167,12 @@ function xml.parseXml(xpath, namespace)
   local xmlstarlet = "xmlstarlet sel " .. new_ns .. "-t -v '" .. xpath .. "'"
   
   -- Turn on xincludes.
-  if xml.xinclude > 0 then
+  if self.xinclude > 0 then
     xmllint = xmllint .. " --xinclude"
   end
   
   -- Compose command.
-  local command = xmllint .. " " .. xml.file .. " " .. err_redirect .. " | " .. xmlstarlet .. " " .. err_redirect
+  local command = xmllint .. " " .. self.file .. " " .. err_redirect .. " | " .. xmlstarlet .. " " .. err_redirect
 
   -- Execute command and return table.
   return execCaptureOutputAsTable(command)
@@ -172,8 +184,8 @@ end
 --  
 --  @param element name of the element which you want to find.
 --  @return content of the first occurence of element as string. If there is any error or no element was found then the function will return nil.
-function xml.getFirstElement(element, namespace)
-  local table = xml.parseXml(xml.composeXPathElement(element, namespace), namespace)
+function xml:getFirstElement(element, namespace)
+  local table = self:parseXml(self:composeXPathElement(element, namespace), namespace)
 
   if not table then
     return nil
@@ -189,8 +201,8 @@ end
 --  
 --  @param element name of the element which you want to find.
 --  @return table with content of all elements. Each elements content is in each item. If there is any error or no element was found then the function will return nil. 
-function xml.getElements(element, namespace)
-  local table = xml.parseXml(xml.composeXPathElement(element, namespace), namespace)
+function xml:getElements(element, namespace)
+  local table = self:parseXml(self:composeXPathElement(element, namespace), namespace)
   
   if not table or #table == 0 then
     return nil
@@ -206,8 +218,8 @@ end
 --  
 --  @param attribute name of the attribute which you want to find.
 --  @return value of first attribute as string. If there is any error then the function will return nil.
-function xml.getFirstAttribute(attribute, namespace)
-  local table = xml.parseXml(xml.composeXPathAttribute(attribute, namespace), namespace)
+function xml:getFirstAttribute(attribute, namespace)
+  local table = self:parseXml(self:composeXPathAttribute(attribute, namespace), namespace)
   
   if not table then
     return nil
@@ -223,8 +235,8 @@ end
 --  
 --  @param attribute name of the attribute which you want to find.
 --  @return table with values of all attributes with 'attribute' name. If there is any error then the function will return nil.
-function xml.getAttributes(attribute, namespace)
-  local table = xml.parseXml(xml.composeXPathAttribute(attribute, namespace), namespace)
+function xml:getAttributes(attribute, namespace)
+  local table = self:parseXml(self:composeXPathAttribute(attribute, namespace), namespace)
   
   if not table or #table == 0 then
     return nil
@@ -244,8 +256,8 @@ end
 --  @param element name of the element
 --  @param namespace namespace url
 --  @return value of the first element with attribute with names which we need.
-function xml.getFirstAttributeOfElement(attribute, element, namespace)
-  local table = xml.parseXml(xml.composeXPathAttributeElement(attribute, element, namespace), namespace)
+function xml:getFirstAttributeOfElement(attribute, element, namespace)
+  local table = self:parseXml(self:composeXPathAttributeElement(attribute, element, namespace), namespace)
  
   if not table then
     return nil
@@ -265,8 +277,8 @@ end
 --  @param element name of the element
 --  @param namespace namespace url
 --  @return value of the first element with attribute with names which we need.
-function xml.getAttributesOfElement(attribute, element, namespace)
-  local table = xml.parseXml(xml.composeXPathAttributeElement(attribute, element, namespace), namespace)
+function xml:getAttributesOfElement(attribute, element, namespace)
+  local table = self:parseXml(self:composeXPathAttributeElement(attribute, element, namespace), namespace)
   
   if not table or #table == 0 then
     return nil
@@ -275,7 +287,3 @@ function xml.getAttributesOfElement(attribute, element, namespace)
   -- Return result of finding.
   return table
 end
-
-
--- Export the module.
-return xml
