@@ -1,5 +1,5 @@
 -- docbook.lua - Class that provides functions for working with docbook documents.
--- Copyright (C) 2015 Pavel Vomacka
+-- Copyright (C) 2015 Pavel Vomacka 
 --
 -- This program is free software:  you can redistribute it and/or modify it
 -- under the terms of  the  GNU General Public License  as published by the
@@ -20,12 +20,16 @@ docbook.__index = docbook
 
 
 --
---- Function that has to be call the first. It sets all variables. 
---  If test is run from root directory of book, path variable will be empty string.
+--- Constructor of the docbook class. It allows to set language of this document 
+--  and path to the document root directory. If test is ran from root directory 
+--  of book, path variable will be empty string.
 --
 --  @param language of this document. For example: en-US
---  @param path to the directory where this book has publican.cfg file. Optional parameter, if not set then path will be set to "".
+--  @param path to the directory where this book has publican.cfg file. 
+--              Optional parameter, if not set then path will be set to "".
+--  @return New object. When there is some error then it returns nil.
 function docbook.create(language, new_path)
+  -- Check whether language is set.
   if language == nil then
     fail("Language of document has to be set. e.g. 'en-US'")
     return nil
@@ -37,13 +41,13 @@ function docbook.create(language, new_path)
   if new_path == nil then 
     new_path = ""
   end
-    
+  
+  docb.path = new_path
+  docb.language = language 
+  
   -- Set object attributes.
   setmetatable(docb, docbook)
   
-  docb.path = new_path
-  docb.language = language
-
   -- Check whether this book is publican (publican.cfg) exists.
   if not docb:isDocbook() then
     return nil
@@ -65,7 +69,7 @@ end
 --
 --- Function that checks whether all attributes are set.
 --
---  @return true when everything is set. Otherwise returns false.
+--  @return true when everything is set. Otherwise return false.
 function docbook:checkAttributes()
   if self.path == nil or self.language == nil then
     -- Both or one of the attributes is not set. Print error message.
@@ -79,7 +83,7 @@ end
 
 
 --
---- Function that checks whether directory is the root directory of docbook document.
+--- Function that checks whether set directory is the root directory of docbook document.
 --
 --  @return true when everything is correct. Otherwise false.
 function docbook:isDocbook()
@@ -101,7 +105,7 @@ end
 --
 --- Function that finds the file where the document starts.
 --
---  @return path to the file 
+--  @return path to the file from current directory 
 function docbook:findStartFile()  
   local content_dir = path.compose(self.path, self.language)
   
@@ -120,7 +124,7 @@ end
 
 
 --
---- Function that finds document type. Type can be Book or Article and returns it.
+--- Function that finds document type and returns it. The type can be Book or Article.
 --
 --  @return 'Book' or 'Article' string according to type of book.
 function docbook:getDocumentType()
@@ -128,20 +132,28 @@ function docbook:getDocumentType()
     return nil
   end
   
+  local default_type = "Book"
+  
   -- Get if there si Book_Info.xml or Article_Info.xml
   local command = "cat " .. path.compose(self.path, self.conf_file_name) .. " 2>/dev/null | grep -E '^[ \t]*type:[ \t]*.*' | awk '{ print $2 }' | sed 's/[[:space:]]//g'"
    
   -- Book or Article, execute command and return its output.
   local output = execCaptureOutputAsString(command)  
   
-  -- In case that type is not mentioned in publican.cfg
+  -- In case that type is not mentioned in publican.cfg, default type is used.
   if output == "" then
-    output = "Book"
+    output = default_type
   end
   
   return output
 end
 
+
+--
+---
+--
+--
+function docbook:getValueFromBookInfo
 
 --
 --- Function that finds document title and returns it.
@@ -152,10 +164,11 @@ function docbook:getDocumentTitle()
     return nil
   end
   
+  -- The "require" will be removed, when these libraries will be automatically loaded by Emender.
   require "xml"
   local document_type = self:getDocumentType()
   
-  
+  --
   local xmlObj = xml.create(path.compose(self.language, document_type .. "_Info.xml"))
   return xmlObj:getFirstElement("title")
 end
@@ -170,6 +183,7 @@ function docbook:getProductName()
     return nil
   end
   
+  -- The "require" will be removed, when these libraries will be automatically loaded by Emender.
   require "xml"
   local document_type = self:getDocumentType()
   
@@ -187,6 +201,7 @@ function docbook:getProductVersion()
     return nil
   end
   
+  -- The "require" will be removed, when these libraries will be automatically loaded by Emender.
   require "xml"
   local document_type = self:getDocumentType()
   
@@ -202,6 +217,10 @@ end
 -- @param text string which should be edited
 -- @return edited string
 function docbook.trimString(text)
+  if text == nil then
+    return nil
+  end
+  
   if string.len(text) > 2 then
     local getOutput = text:gmatch("[%p%s]*(%w[%w%s%p]*%w)[%p%s]*$")
     return getOutput()
