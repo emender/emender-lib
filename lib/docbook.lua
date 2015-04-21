@@ -25,7 +25,7 @@ docbook.__index = docbook
 --
 --  @param language of this document. For example: en-US
 --  @param path to the directory where this book has publican.cfg file. Optional parameter, if not set then path will be set to "".
-function docbook.create(language, path)
+function docbook.create(language, new_path)
   if language == nil then
     fail("Language of document has to be set. e.g. 'en-US'")
     return nil
@@ -34,15 +34,28 @@ function docbook.create(language, path)
   -- Set default value of docbook object.
   local docb = {["conf_file_name"]="publican.cfg"}
   
-  if path == nil then 
-    path = ""
+  if new_path == nil then 
+    new_path = ""
   end
     
   -- Set object attributes.
   setmetatable(docb, docbook)
   
-  docb.path = path
+  docb.path = new_path
   docb.language = language
+
+  -- Check whether this book is publican (publican.cfg) exists.
+  if not docb:isDocbook() then
+    return nil
+  end
+  
+  -- Check whether the directory with content for this language exists.
+  local content_dir = path.compose(docb.path, docb.language)
+
+  if not path.directory_exists(content_dir) then
+    fail("Directory '" .. content_dir .. "' does not exist.")
+    return nil 
+  end
   
   -- Return the new object. 
   return docb
@@ -56,7 +69,7 @@ end
 function docbook:checkAttributes()
   if self.path == nil or self.language == nil then
     -- Both or one of the attributes is not set. Print error message.
-    fail("Attributes error, path:" .. self.path .. ", language:" .. self.language .. ".")
+    fail("Attributes error, path: '" .. self.path .. "', language: '" .. self.language .. "'.")
     return false
   end
   
@@ -77,7 +90,7 @@ function docbook:isDocbook()
   
   -- Check whether publican.cfg exist.
   if not path.file_exists(self.conf_file_name) then
-    fail("File " .. self.conf_file_name .. " does not exists.")
+    fail("File '" .. self.conf_file_name .. "' does not exists.")
     return false
   end
   
@@ -90,11 +103,19 @@ end
 --
 --  @return path to the file 
 function docbook:findStartFile()  
+  local content_dir = path.compose(self.path, self.language)
+  
   -- Lists the files in language directory.
-  local command = "ls " .. path.compose(self.path, self.language .. "/*.ent")
+  local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
   
   -- Execute command and return the output and substitute .xml suffix for .ent.
-  return string.gsub(execCaptureOutputAsString(command), "%.ent$", ".xml", 1)
+  local result = execCaptureOutputAsString(command)
+  if result ~= "" then
+    return string.gsub(result, "%.ent$", ".xml", 1)
+  end
+  
+  -- Return nil when 
+  
 end
 
 
@@ -108,7 +129,7 @@ function docbook:getDocumentType()
   end
   
   -- Get if there si Book_Info.xml or Article_Info.xml
-  local command = "cat " .. path.compose(self.path, self.conf_file_name) .. " | grep -E '^[ \t]*type:[ \t]*.*' | awk '{ print $2 }' | sed 's/[[:space:]]//g'"
+  local command = "cat " .. path.compose(self.path, self.conf_file_name) .. " 2>/dev/null | grep -E '^[ \t]*type:[ \t]*.*' | awk '{ print $2 }' | sed 's/[[:space:]]//g'"
    
   -- Book or Article, execute command and return its output.
   local output = execCaptureOutputAsString(command)  
