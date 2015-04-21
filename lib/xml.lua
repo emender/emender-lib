@@ -27,7 +27,7 @@ xml.__index = xml
 --  @param xinclude Enables (1) or disables (0) xincludes. Optional.
 function xml.create(file_name, xinclude)
   if file_name == nil then 
-    fail("File name has to be set when you want to create new object of class xml.")
+    fail("File name has to be set.")
     return nil
   end
   
@@ -38,9 +38,24 @@ function xml.create(file_name, xinclude)
   setmetatable(x, xml)
   x.file = file_name
   
-  -- Set xinclude if xinclude is set.
+  -- Check whether xinclude has correct value and if it has, then set it.
   if xinclude ~= nil then
-    x.xinclude = xinclude
+    if type(xinclude) == "number" then
+      if xinclude == 1 or xinclude == 0 then
+        x.xinclude = xinclude
+      else
+        fail("Parameter 'xinclude' has to be 0 or 1, not: '" .. xinclude .. "'.")
+        return nil
+      end
+    else
+      fail("Parameter 'xinclude' has to be number value. Current type: '" .. type(xinclude) .. "'.")
+      return nil
+    end
+  end
+  
+  -- Check whether file_name is set correctly.
+  if not x:checkFileVariable() then 
+    return nil
   end
   
   -- Return the new object
@@ -51,7 +66,7 @@ end
 --
 --- Function that check whether variables are set.
 --
--- @return false when variable isn't set
+-- @return false when variable isn't set or file does not exist.
 function xml:checkFileVariable() 
   -- Check whether file is set and whether file exists.
   if self.file == nil then
@@ -62,6 +77,7 @@ function xml:checkFileVariable()
     return false
   end
   
+  -- Everything is OK, return true.
   return true
 end
 
@@ -143,11 +159,6 @@ end
 --  @param xpath defines path to the elements. If namespace is defined then use namespace prefix.
 --  @return table where each item is content of one element. Otherwise, it returns nil.
 function xml:parseXml(xpath, namespace)
-  -- Check whether file name is set.
-  if not self:checkFileVariable() then
-    return nil
-  end
-  
   -- Check whether xpath parameter is set.
   if not xpath then
     return nil
