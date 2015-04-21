@@ -43,7 +43,7 @@ function xml.create(file_name, xinclude)
     x.xinclude = xinclude
   end
   
-  -- Return new object
+  -- Return the new object
   return x
 end
 
