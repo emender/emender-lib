@@ -48,6 +48,11 @@ function docbook.create(language, new_path)
   -- Set object attributes.
   setmetatable(docb, docbook)
   
+  -- Check whether object attributes are set.
+  if not docb:checkAttributes() then
+    return nil
+  end
+  
   -- Check whether this book is publican (publican.cfg) exists.
   if not docb:isDocbook() then
     return nil
@@ -87,10 +92,6 @@ end
 --
 --  @return true when everything is correct. Otherwise false.
 function docbook:isDocbook()
-  -- Path and language variables has to be set.
-  if not self:checkAttributes() then
-    return nil
-  end
   
   -- Check whether publican.cfg exist.
   if not path.file_exists(self.conf_file_name) then
@@ -127,11 +128,7 @@ end
 --- Function that finds document type and returns it. The type can be Book or Article.
 --
 --  @return 'Book' or 'Article' string according to type of book.
-function docbook:getDocumentType()
-  if not self:checkAttributes() then
-    return nil
-  end
-  
+function docbook:getDocumentType()  
   local default_type = "Book"
   
   -- Get if there si Book_Info.xml or Article_Info.xml
@@ -150,27 +147,31 @@ end
 
 
 --
----
+--- Function that parse content of 'element' from Book(Article)_Info.xml
 --
---
-function docbook:getValueFromBookInfo
+--  @param element name of the element
+--  @return content of this element
+function docbook:getElementFromInfoXML(element)
+  if element == nil then
+    return nil
+  end
+  
+  -- The "require" will be removed when these libraries will be automatically loaded by Emender.
+  require "xml"
+  local document_type = self:getDocumentType()
+  
+  -- Parse Book(Article)_Info.xml and return content of element which we need.
+  local xmlObj = xml.create(path.compose(self.language, document_type .. "_Info.xml"))
+  return xmlObj:getFirstElement(element)
+end
+
 
 --
 --- Function that finds document title and returns it.
 --
 --  @return document title as string.
 function docbook:getDocumentTitle()
-  if not self:checkAttributes() then
-    return nil
-  end
-  
-  -- The "require" will be removed, when these libraries will be automatically loaded by Emender.
-  require "xml"
-  local document_type = self:getDocumentType()
-  
-  --
-  local xmlObj = xml.create(path.compose(self.language, document_type .. "_Info.xml"))
-  return xmlObj:getFirstElement("title")
+  return self:getElementFromInfoXML("title")
 end
 
 
@@ -179,16 +180,7 @@ end
 --
 --  @return  product name as string.
 function docbook:getProductName()
-  if not self:checkAttributes() then
-    return nil
-  end
-  
-  -- The "require" will be removed, when these libraries will be automatically loaded by Emender.
-  require "xml"
-  local document_type = self:getDocumentType()
-  
-  local xmlObj = xml.create(path.compose(self.language, document_type .. "_Info.xml"))
-  return xmlObj:getFirstElement("productname")
+  return self:getElementFromInfoXML("productname")
 end
 
 
@@ -197,22 +189,12 @@ end
 --
 --  @return product version as string.
 function docbook:getProductVersion()
-  if not self:checkAttributes() then
-    return nil
-  end
-  
-  -- The "require" will be removed, when these libraries will be automatically loaded by Emender.
-  require "xml"
-  local document_type = self:getDocumentType()
-  
-  local xmlObj = xml.create(path.compose(self.language, document_type .. "_Info.xml"))
-  return xmlObj:getFirstElement("productnumber")
+  return self:getElementFromInfoXML("productnumber")
 end
 
 
 --
 --- Function that removes all punctuation characters from both sides of string.
---  It also removes all spaces from both sides of the string, too.
 --
 -- @param text string which should be edited
 -- @return edited string
