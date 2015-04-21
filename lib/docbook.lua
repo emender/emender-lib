@@ -45,7 +45,7 @@ function docbook.create(language, new_path)
   docb.path = new_path
   docb.language = language 
   
-  -- Set object attributes.
+  -- Set metatable for new object.
   setmetatable(docb, docbook)
   
   -- Check whether object attributes are set.
