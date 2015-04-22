@@ -120,7 +120,28 @@ function docbook:findStartFile()
   end
   
   -- Return nil when 
+  return nil
+end
+
+
+--
+--- Function that finds the entity file. 
+--
+--  @return path to the entity file
+function docbook:findEntityFile()
+  local content_dir = path.compose(self.path, self.language)
   
+  -- Lists the files in language directory.
+  local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
+  
+  -- Execute command and return the output and substitute .xml suffix for .ent.
+  local result = execCaptureOutputAsString(command)
+  if result ~= "" then
+    return result
+  end
+  
+  -- Return nil when 
+  return nil
 end
 
 
@@ -222,6 +243,49 @@ function docbook:getPublicanOption(item_name)
   local command = "cat " .. path.compose(self.path, self.conf_file_name) .. " | grep -E '^[ \t]*" .. item_name .. ":[ \t]*.*' | sed 's/^[^:]*://'"
    
   -- Execute command, trim output and return it.
-  return self.trimString(execCaptureOutputAsString(command))
+  local output = self.trimString(execCaptureOutputAsString(command))
+  if output == "" then
+    return nil
+  end
+  
+  return output
 end
 
+
+
+--
+--- Function that finds any entity value in .ent file.
+-- 
+--  @param entityName name of entity which this function will find.
+--  @return value of entity
+function docbook:getEntityValue(entityName)
+  
+  if entityName == nil then
+    return nil
+  end
+  
+  -- Find entity file
+  local ent_file = self:findEntityFile()
+  
+  -- Check whether entity file was found.
+  if ent_file == nil then
+    return nil
+  end
+  
+  -- Compose command for parsing entity value.
+  local cat = "cat "
+  local grep = "grep \""
+  local sed_one = "sed 's/^<!ENTITY " .. entityName:upper() .. " //'"
+  local sed_two = "sed 's/>$//'"
+  local command = cat .. ent_file .. " | " .. grep .. entityName:upper() .. "\" | " .. sed_one ..  " | " .. sed_two
+  
+  local output = self.trimString(execCaptureOutputAsString(command))
+  
+  -- Check whether entity was found.
+  if output == "" then
+    return nil
+  end
+  
+  -- If it was found then return result. 
+  return output
+end
