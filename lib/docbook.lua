@@ -53,11 +53,6 @@ function docbook.create(language, new_path)
     return nil
   end
   
-  -- Check whether this book is publican (publican.cfg) exists.
-  if not docb:isDocbook() then
-    return nil
-  end
-  
   -- Check whether the directory with content for this language exists.
   local content_dir = path.compose(docb.path, docb.language)
 
@@ -88,10 +83,10 @@ end
 
 
 --
---- Function that checks whether set directory is the root directory of docbook document.
+--- Function that checks whether set directory is the root directory of publican document.
 --
---  @return true when everything is correct. Otherwise false.
-function docbook:isDocbook()
+--  @return true when there is publican. Otherwise false.
+function docbook:isPublican()
   
   -- Check whether publican.cfg exist.
   if not path.file_exists(self.conf_file_name) then
@@ -119,7 +114,7 @@ function docbook:findStartFile()
     return string.gsub(result, "%.ent$", ".xml", 1)
   end
   
-  -- Return nil when 
+  -- Return nil when there is not entity file.
   return nil
 end
 
@@ -140,7 +135,7 @@ function docbook:findEntityFile()
     return result
   end
   
-  -- Return nil when 
+  -- Return nil when there is not entity file.
   return nil
 end
 
@@ -215,26 +210,6 @@ end
 
 
 --
---- Function that removes all punctuation characters from both sides of string.
---
--- @param text string which should be edited
--- @return edited string
-function docbook.trimString(text)
-  if text == nil then
-    return nil
-  end
-  
-  if string.len(text) > 2 then
-    local getOutput = text:gmatch("[%p%s]*(%w[%w%s%p]*%w)[%p%s]*$")
-    return getOutput()
-  else
-    local getOutput = text:gmatch("[%p%s]*(%w*)[%p%s]*$")
-    return getOutput()
-  end
-end
-
-
---
 --- Function that parse values from publican.cfg file.
 --
 --  @param item_name is name of value which we want to find. The name without colon.
@@ -243,14 +218,13 @@ function docbook:getPublicanOption(item_name)
   local command = "cat " .. path.compose(self.path, self.conf_file_name) .. " | grep -E '^[ \t]*" .. item_name .. ":[ \t]*.*' | sed 's/^[^:]*://'"
    
   -- Execute command, trim output and return it.
-  local output = self.trimString(execCaptureOutputAsString(command))
+  local output = string.trimString(execCaptureOutputAsString(command))
   if output == "" then
     return nil
   end
   
   return output
 end
-
 
 
 --
