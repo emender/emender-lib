@@ -253,7 +253,7 @@ function docbook:getEntityValue(entityName)
   local sed_two = "sed 's/>$//'"
   local command = cat .. ent_file .. " | " .. grep .. entityName:upper() .. "\" | " .. sed_one ..  " | " .. sed_two
   
-  local output = self.trimString(execCaptureOutputAsString(command))
+  local output = string.trimString(execCaptureOutputAsString(command))
   
   -- Check whether entity was found.
   if output == "" then
