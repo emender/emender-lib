@@ -86,7 +86,7 @@ end
 --- Function that checks whether set directory is the root directory of publican document.
 --
 --  @return true when there is publican. Otherwise false.
-function docbook:isPublican()
+function docbook:isPublicanProject()
   
   -- Check whether publican.cfg exist.
   if not path.file_exists(self.conf_file_name) then
@@ -141,9 +141,9 @@ end
 
 
 --
---- Function that finds document type and returns it. The type can be Book or Article.
+--- Function that finds document type and returns it. The type can be Book, Article or Set.
 --
---  @return 'Book' or 'Article' string according to type of book.
+--  @return 'Book', 'Article' or 'Set' string according to type of book.
 function docbook:getDocumentType()  
   local default_type = "Book"
   
