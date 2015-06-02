@@ -15,7 +15,7 @@
 
 
 -- Define the class:
-docbook = {}
+docbook = {requires = {}}
 docbook.__index = docbook
 
 
@@ -31,7 +31,7 @@ docbook.__index = docbook
 function docbook.create(language, new_path)
   -- Check whether language is set.
   if language == nil then
-    fail("Language of document has to be set. e.g. 'en-US'")
+    fail("The language of the document has to be set. e.g. 'en-US'")
     return nil
   end
   
@@ -172,8 +172,7 @@ function docbook:getElementFromInfoXML(element)
     return nil
   end
   
-  -- The "require" will be removed when these libraries will be automatically loaded by Emender.
-  require "xml"
+  -- Get document type.
   local document_type = self:getDocumentType()
   
   -- Parse Book(Article)_Info.xml and return content of element which we need.
