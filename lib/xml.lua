@@ -81,6 +81,7 @@ function xml:checkFileVariable()
   return true
 end
 
+
 --
 --- Function that compose XPath query which find the content of 'element'.
 --  
@@ -175,6 +176,7 @@ function xml:parseXml(xpath, namespace)
   local err_redirect = "2>/dev/null"
   local xmllint = "xmllint " 
   local xmlstarlet = "xmlstarlet sel " .. new_ns .. "-t -v '" .. xpath .. "'"
+  local sed = "sed -e 's/\\xC2\\xA0/ /g'"
   
   -- Turn on xincludes.
   if self.xinclude > 0 then
@@ -182,9 +184,18 @@ function xml:parseXml(xpath, namespace)
   end
   
   -- Compose command.
-  local command = xmllint .. " " .. self.file .. " " .. err_redirect .. " | " .. xmlstarlet .. " " .. err_redirect
+  local command = xmllint .. " " .. self.file .. " " .. err_redirect .. " | " .. xmlstarlet .. " " .. err_redirect .. " | " .. sed
 
-  -- Execute command and return table.
+  local result_table = {}
+  
+  --[[-- Go through all results and substitute nbsps.
+  for _, output in ipairs(execCaptureOutputAsTable(command)) do
+    table.insert(result_table, self.subSpaces(output))
+  end
+  
+  -- Return table.
+  return result_table
+  ]]  
   return execCaptureOutputAsTable(command)
 end
 
