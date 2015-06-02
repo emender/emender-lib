@@ -15,8 +15,8 @@
 
 -- TBD: default return values when no element is found
 
--- Define the class:
-xml = {}
+-- Define the class and set of tools which has to be installed:
+xml = {requires = {"xmllint", "xmlstarlet"}}
 xml.__index = xml
 
 
@@ -80,7 +80,6 @@ function xml:checkFileVariable()
   -- Everything is OK, return true.
   return true
 end
-
 
 --
 --- Function that compose XPath query which find the content of 'element'.
@@ -156,7 +155,7 @@ end
 --- Function that find all elements defined by xpath and get content of these elements.
 --
 --  @param namespace (if there is no namespace, then set this argument to empty string). For example: r=http://example.namespace.com
---  @param xpath defines path to the elements. If namespace is defined then use namespace prefix.
+--  @param xpath defines path to the elements. If namespace is defined then use namespace 'newnamespace' prefix(i.e. //newnamespace:elem/newnamespace:test).
 --  @return table where each item is content of one element. Otherwise, it returns nil.
 function xml:parseXml(xpath, namespace)
   -- Check whether xpath parameter is set.
@@ -174,12 +173,12 @@ function xml:parseXml(xpath, namespace)
   
   -- Variables for composing command.
   local err_redirect = "2>/dev/null"
-  local xmllint = "xmllint --postvalid" 
+  local xmllint = "xmllint " 
   local xmlstarlet = "xmlstarlet sel " .. new_ns .. "-t -v '" .. xpath .. "'"
   
   -- Turn on xincludes.
   if self.xinclude > 0 then
-    xmllint = xmllint .. " --xinclude"
+    xmllint = xmllint .. "--xinclude --postvalid "
   end
   
   -- Compose command.
