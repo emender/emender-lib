@@ -186,17 +186,16 @@ function xml:parseXml(xpath, namespace)
   -- Compose command.
   local command = xmllint .. " " .. self.file .. " " .. err_redirect .. " | " .. xmlstarlet .. " " .. err_redirect .. " | " .. sed
 
-  local result_table = {}
+  -- Execute command.
+  local result_table = execCaptureOutputAsTable(command)
   
-  --[[-- Go through all results and substitute nbsps.
-  for _, output in ipairs(execCaptureOutputAsTable(command)) do
-    table.insert(result_table, self.subSpaces(output))
+  -- If there is no found item then return nil.
+  if #result_table == 0 then
+    return nil
   end
   
-  -- Return table.
+  -- Return value.
   return result_table
-  ]]  
-  return execCaptureOutputAsTable(command)
 end
 
 
@@ -225,7 +224,7 @@ end
 function xml:getElements(element, namespace)
   local table = self:parseXml(self:composeXPathElement(element, namespace), namespace)
   
-  if not table or #table == 0 then
+  if not table then
     return nil
   end
   
@@ -259,7 +258,7 @@ end
 function xml:getAttributes(attribute, namespace)
   local table = self:parseXml(self:composeXPathAttribute(attribute, namespace), namespace)
   
-  if not table or #table == 0 then
+  if not table then
     return nil
   end
   
@@ -301,7 +300,7 @@ end
 function xml:getAttributesOfElement(attribute, element, namespace)
   local table = self:parseXml(self:composeXPathAttributeElement(attribute, element, namespace), namespace)
   
-  if not table or #table == 0 then
+  if not table then
     return nil
   end
   
