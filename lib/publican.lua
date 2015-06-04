@@ -24,8 +24,10 @@ publican.__index = publican
 --  and path to the publican conf file. This function returns new object of this class 
 --  when everything is correct, otherwise nil.
 --
+--  Attributes of publican object: path, configuration_file, language
+--
 --  @param conf_file the name of configuration file"".
---  @param path to the publican configuration file.
+--  @param new_path to the publican configuration file.
 --  @return New object. When there is some error then it returns nil.
 function publican.create(conf_file, new_path)
   -- Check whether name of file is set.
@@ -52,8 +54,16 @@ function publican.create(conf_file, new_path)
     return nil 
   end
   
+  -- Get language code from publican cfg file.
+  publ.language = publ:getPublicanOption("xml_lang")
+  
+  -- TEMPORARY - default language is en-US:
+  if not publ.language then 
+    publ.language = "en-US"
+  end
+  
   -- Return the new object. 
-  return cfg_file_path
+  return publ
 end
 
 --
@@ -63,8 +73,8 @@ end
 function publican:isPublicanProject()
   
   -- Check whether publican.cfg exist.
-  if not path.file_exists(self.conf_file_name) then
-    fail("File '" .. self.conf_file_name .. "' does not exists.")
+  if not path.file_exists(self.configuration_file) then
+    fail("File '" .. self.configuration_file .. "' does not exists.")
     return false
   end
   
@@ -89,6 +99,48 @@ function publican:getPublicanOption(item_name)
   return output
 end
 
+--
+--- Function that finds the file where the document starts.
+--
+--  @return path to the file from current directory 
+function publican:findMainFile()  
+  local content_dir = path.compose(self.path, self.language)
+  
+  -- Lists the files in language directory.
+  local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
+  
+  -- Execute command and return the output and substitute .xml suffix for .ent.
+  local result = execCaptureOutputAsString(command)
+  
+  if result ~= "" then
+    return string.gsub(result, "%.ent$", ".xml", 1)
+  end
+  
+  -- Return nil when there is not entity file.
+  return nil
+end
+
+
+--
+--- Function that finds document type and returns it. The type can be Book, Article or Set.
+--
+--  @return 'Book', 'Article' or 'Set' string according to type of book.
+function publican:getDocumentType()  
+  local default_type = "Book"
+  
+  -- Get if there si Book_Info.xml or Article_Info.xml
+  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " 2>/dev/null | grep -E '^[ \t]*type:[ \t]*.*' | awk '{ print $2 }' | sed 's/[[:space:]]//g'"
+   
+  -- Book or Article, execute command and return its output.
+  local output = execCaptureOutputAsString(command)  
+  
+  -- In case that type is not mentioned in publican.cfg, default type is used.
+  if output == "" then
+    output = default_type
+  end
+  
+  return output
+end
 
 --
 --- Function that allows find all options from publican.cfg which match pattern.
