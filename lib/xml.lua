@@ -64,6 +64,27 @@ end
 
 
 --
+--- Setter for xinclude attribute.
+--
+--  @param value on which you want to set xinclude attribute.
+function xml:setXinclude(value) 
+  -- Check value and set it.
+  if value == 1 or value == 0 then
+    self.xinclude = value
+  end
+end
+
+
+--
+--- Getter for xinclude attribute.
+--
+--  @return current value of xinclude.
+function xml:getXinclude()
+  return self.xinclude
+end
+
+
+--
 --- Function that check whether variables are set.
 --
 -- @return false when variable isn't set or file does not exist.
