@@ -128,18 +128,14 @@ end
 function publican:getDocumentType()  
   local default_type = "Book"
   
-  -- Get if there si Book_Info.xml or Article_Info.xml
-  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " 2>/dev/null | grep -E '^[ \t]*type:[ \t]*.*' | awk '{ print $2 }' | sed 's/[[:space:]]//g'"
-   
-  -- Book or Article, execute command and return its output.
-  local output = execCaptureOutputAsString(command)  
+  local d_type = self:getPublicanOption("type")  
   
   -- In case that type is not mentioned in publican.cfg, default type is used.
-  if output == "" then
-    output = default_type
+  if d_type == "" then
+    d_type = default_type
   end
   
-  return output
+  return d_type
 end
 
 --
