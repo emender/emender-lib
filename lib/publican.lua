@@ -83,21 +83,23 @@ end
 
 
 --
---- Function that parse values from publican config file.
---
---  @param item_name is name of value which we want to find. The name without colon.
---  @return the value.
-function publican:getPublicanOption(item_name)
-  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[ \t]*" .. item_name .. ":[ \t]*.*' | sed 's/^[^:]*://'"
-   
-  -- Execute command, trim output and return it.
-  local output = string.trimString(execCaptureOutputAsString(command))
-  if output == "" then
-    return nil
-  end
+--- Function that parse given 'name: value' string (line from publican config file).
+--  
+--  @return two variables - the first is name of option and the second is value of this option.
+function publican.parseNameAndValue(str)
+  -- Pattern with two captures, the first for name, the second for value.
+  local match_f = str:gmatch("([^:]*)(.*)")
+  local name = ""
+  local value = ""
   
-  return output
+  -- Run iterator function to get name and value.
+  name, value = match_f()
+  
+  -- Return name and trimmed value.
+  return name, string.trimString(value)
 end
+
+
 
 --
 --- Function that finds the file where the document starts.
@@ -122,6 +124,47 @@ end
 
 
 --
+--- Function that parse values from publican config file.
+--
+--  @param item_name is name of value which we want to find. The name without colon.
+--  @return the value.
+function publican:getPublicanOption(item_name)
+  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[ \t]*" .. item_name .. ":[ \t]*.*' | sed 's/^[^:]*://'"
+   
+  -- Execute command, trim output and return it.
+  local output = string.trimString(execCaptureOutputAsString(command))
+  if output == "" then
+    return nil
+  end
+  
+  return output
+end
+
+
+--
+--- Function that fetch all options from pulican configuration file.
+--
+--  @return table with all publican options.
+function publican:getAllPublicanOptions()
+  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[^#][ \t]*.*:[ \t]*.*'"
+   
+  -- Execute command, trim output and return it.
+  local output = execCaptureOutputAsTable(command)
+  
+  -- Prepare list for trimmed output.
+  local trimmed_output = {}
+  for _, item in ipairs(output) do
+    name, value = publican.parseNameAndValue(item)
+    trimmed_output[name] = value
+  end
+  
+  -- Return table with name and value of the option.
+  return trimmed_output
+end
+  
+  
+  
+--
 --- Function that finds document type and returns it. The type can be Book, Article or Set.
 --
 --  @return 'Book', 'Article' or 'Set' string according to type of book.
@@ -141,13 +184,21 @@ end
 --
 --- Function that allows find all options from publican.cfg which match pattern.
 --
---  @param pattern 
+--  @param pattern by which options will be found.
 --  @return table with options which match the pattern
 function publican:matchPublicanOption(pattern) 
-  -- TBD  
+  local all_options = self:getAllPublicanOptions()
   
+  -- Go through all options and choose only those which match the pattern.
+  local result_list = {}
+  for name, value in pairs(all_options) do 
+    if value:match(pattern) then
+      result_list[name] = value
+    end
+  end
   
-  
+  -- Return list witch only options which match the pattern.
+  return result_list
 end
 
 
