@@ -177,7 +177,7 @@ function docbook:getElementFromInfoXML(element)
   
   -- Parse Book(Article)_Info.xml and return content of element which we need.
   local xmlObj = xml.create(path.compose(self.language, document_type .. "_Info.xml"))
-  xmlObj.setXinclude(0)
+  xmlObj:setXinclude(0)
   return xmlObj:getFirstElement(element)
 end
 
