@@ -100,7 +100,6 @@ function publican.parseNameAndValue(str)
 end
 
 
-
 --
 --- Function that finds the file where the document starts.
 --
@@ -185,16 +184,23 @@ end
 --- Function that allows find all options from publican.cfg which match pattern.
 --
 --  @param pattern by which options will be found.
---  @return table with options which match the pattern
+--  @return table with options which match the pattern in this form: key = name_of_option, value = value_of_option.
 function publican:matchPublicanOption(pattern) 
   local all_options = self:getAllPublicanOptions()
   
   -- Go through all options and choose only those which match the pattern.
   local result_list = {}
+  local found = false
   for name, value in pairs(all_options) do 
     if value:match(pattern) then
       result_list[name] = value
+      found = true
     end
+  end
+  
+  -- In case that there is no option which match the pattern, return nil.
+  if not found then 
+    return nil
   end
   
   -- Return list witch only options which match the pattern.
