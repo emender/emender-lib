@@ -13,10 +13,9 @@
 -- You should have received a copy of the GNU General Public License  along
 -- with this program. If not, see <http://www.gnu.org/licenses/>.
 
--- TBD: default return values when no element is found
 
 -- Define the class and set of tools which has to be installed:
-xml = {requires = {"xmllint", "xmlstarlet"}}
+xml = {requires = {"xsltproc"}}
 xml.__index = xml
 
 
@@ -61,6 +60,19 @@ function xml.create(file_name, xinclude)
   -- Return the new object
   return x
 end
+
+--[[
+  xslt for getting whole content of bookinfo. TODO: make it nicer..
+
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
+  <xsl:template match="/">
+    <xsl:copy-of select="book/bookinfo/node()"/>
+  </xsl:template>
+</xsl:stylesheet>
+
+]]
 
 
 --
@@ -114,14 +126,13 @@ function xml:composeXPathElement(element, namespace)
   end
   
   local beginning = "//"
-  local get_text = "/text()"
   local namespace_prefix = "newnamespace:"
   
   -- Compose xpath query and return it
   if namespace ~= nil then
-    return beginning .. namespace_prefix .. element .. get_text
+    return beginning .. namespace_prefix .. element
   else
-    return beginning .. element .. get_text
+    return beginning .. element
   end
 end
 
@@ -192,26 +203,30 @@ function xml:parseXml(xpath, namespace)
   else 
     new_ns = ""
   end
-  
-  -- Variables for composing command.
-  local err_redirect = "2>/dev/null"
-  local xmllint = "xmllint " 
-  local xmlstarlet = "xmlstarlet sel " .. new_ns .. "-t -v '" .. xpath .. "'"
-  local sed = "sed -e 's/\\xC2\\xA0/ /g'"
+
+  local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
+  local xinclude = ""
   
   -- Turn on xincludes.
   if self.xinclude > 0 then
-    xmllint = xmllint .. "--xinclude --postvalid "
+    xinclude = "--xinclude "
   end
   
+  local err_redirect = "2>/dev/null"
+  local echo_outer = "echo -e `"
+  local echo_inner = "echo " .. xslt_definition
+  local xsltproc = "xsltproc " .. xinclude
+  local sed = "sed -e 's/\\xC2\\xA0/ /g'"
+  local end_of_command = "`"
+ 
   -- Compose command.
-  local command = xmllint .. " " .. self.file .. " " .. err_redirect .. " | " .. xmlstarlet .. " " .. err_redirect .. " | " .. sed
-
+  local command = echo_outer .. echo_inner .. " | " ..  xsltproc .. " - " .. self.file .. " " .. err_redirect .. " | " .. sed .. end_of_command
+  
   -- Execute command.
   local result_table = execCaptureOutputAsTable(command)
   
   -- If there is no found item then return nil.
-  if #result_table == 0 then
+  if result_table[1] == "" then
     return nil
   end
   
