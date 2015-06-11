@@ -263,3 +263,28 @@ function docbook:getEntityValue(entityName)
   -- If it was found then return result. 
   return output
 end
+
+
+
+
+---------------------- NEW FUNCTIONS ---------
+
+
+
+--- Creates infofile object and return it. From this object you can get
+--  information which are in book(article)info tag. 
+--
+--  @return infofile object
+function docbook:getInfoFile()
+  return infofile.create(self.path)
+end
+
+
+--- Creates authorgroup object and return it. From this object you can get
+--  information which are in authorgroup tag. 
+--
+--  @return infofile object
+function docbook:getAuthorGroup()
+  return authorgroup.create(self.path)
+end
+
