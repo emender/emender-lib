@@ -61,7 +61,15 @@ end
 --
 --  @return document title as string.
 function infofile:documentTitle()
-  return self:getOneElement("title")[1]
+  -- Find title element.
+  local title = self:getOneElement("title")
+  
+  -- Check whether there is title
+  if title then
+    return title[1]
+  end
+  
+  return nil
 end
 
 
@@ -70,7 +78,14 @@ end
 --
 --  @return document subtitle as string.
 function infofile:documentSubtitle()
-  return self:getOneElement("subtitle")[1]
+  local subtitle = self:getOneElement("subtitle")
+  
+  -- Check whether there is subtitle.
+  if subtitle then
+    return subtitle[1]
+  end
+  
+  return nil
 end
 
 
@@ -79,7 +94,13 @@ end
 --
 --  @return  product name as string.
 function infofile:productName()
-  return self:getOneElement("productname")[1]
+  local productname = self:getOneElement("productname")
+  
+  if productname then
+    return productname[1]
+  end
+  
+  return nil
 end
 
 
@@ -88,7 +109,13 @@ end
 --
 --  @return product version as string.
 function infofile:productVersion()
-  return self:getOneElement("productnumber")[1]
+  local productnumber = self:getOneElement("productnumber")
+  
+  if productnumber then
+    return productnumber[1]
+  end
+  
+  return nil
 end
 
 
@@ -106,7 +133,13 @@ end
 --
 --  @return product abstract as string.
 function infofile:abstract()
-  return self:getOneElement("abstract")[1]
+  local abstract = self:getOneElement("abstract")
+  
+  if abstract then
+    return abstract[1]
+  end
+  
+  return nil
 end
 
 
