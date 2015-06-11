@@ -95,9 +95,9 @@ end
 --
 --- Function that finds keywords and returns them.
 --
---  @return product keywords as string.
+--  @return product keywords in table, one item for each keyboard.
 function infofile:keywords()
-  return self:getOneElement("keywords")[1]
+  return self:getOneElement("keywordset/keyword")
 end
 
 
