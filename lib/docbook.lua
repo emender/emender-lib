@@ -20,46 +20,22 @@ docbook.__index = docbook
 
 
 --
---- Constructor of the docbook class. It allows to set language of this document 
---  and path to the document root directory. If test is ran from root directory 
---  of book, path variable will be empty string.
+--- Constructor of the docbook class. 
 --
---  @param language of this document. For example: en-US
---  @param path to the directory where this book has publican.cfg file. 
---              Optional parameter, if not set then path will be set to "".
 --  @return New object. When there is some error then it returns nil.
-function docbook.create(language, new_path)
-  -- Check whether language is set.
-  if language == nil then
-    fail("The language of the document has to be set. e.g. 'en-US'")
-    return nil
+function docbook.create(file_path)
+  -- Empty object.
+  local docb = {}
+  
+  if not path.file_exists(file_path) then  
+    fail("File '" .. file_path .. "' does not exist.")
   end
   
-  -- Set default value of docbook object.
-  local docb = {["conf_file_name"]="publican.cfg"}
-  
-  if new_path == nil then 
-    new_path = ""
-  end
-  
-  docb.path = new_path
-  docb.language = language 
+  -- Store name file into object.
+  docb.main_file = file_path
   
   -- Set metatable for new object.
   setmetatable(docb, docbook)
-  
-  -- Check whether object attributes are set.
-  if not docb:checkAttributes() then
-    return nil
-  end
-  
-  -- Check whether the directory with content for this language exists.
-  local content_dir = path.compose(docb.path, docb.language)
-
-  if not path.directory_exists(content_dir) then
-    fail("Directory '" .. content_dir .. "' does not exist.")
-    return nil 
-  end
   
   -- Return the new object. 
   return docb
@@ -67,58 +43,36 @@ end
 
 
 --
---- Function that checks whether all attributes are set.
+--- Creates infofile object and return it. From this object you can get
+--  information which are in book(article)info tag. 
 --
---  @return true when everything is set. Otherwise return false.
-function docbook:checkAttributes()
-  if self.path == nil or self.language == nil then
-    -- Both or one of the attributes is not set. Print error message.
-    fail("Attributes error, path: '" .. self.path .. "', language: '" .. self.language .. "'.")
-    return false
-  end
-  
-  -- Everything is OK, return true.
-  return true
+--  @return infofile object
+function docbook:getInfoFile()
+  return infofile.create(self.main_file)
 end
 
 
 --
---- Function that checks whether set directory is the root directory of publican document.
+--- Creates authorgroup object and return it. From this object you can get
+--  information which are in authorgroup tag. 
 --
---  @return true when there is publican. Otherwise false.
-function docbook:isPublicanProject()
-  
-  -- Check whether publican.cfg exist.
-  if not path.file_exists(self.conf_file_name) then
-    fail("File '" .. self.conf_file_name .. "' does not exists.")
-    return false
-  end
-  
-  return true
+--  @return infofile object
+function docbook:getAuthorGroup()
+  return authorgroup.create(self.main_file)
 end
 
 
 --
---- Function that finds the file where the document starts.
+--- Creates revhistory object and return it. From this object you can get
+--  information which are in revhistory tag. 
 --
---  @return path to the file from current directory 
-function docbook:findStartFile()  
-  local content_dir = path.compose(self.path, self.language)
-  
-  -- Lists the files in language directory.
-  local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
-  
-  -- Execute command and return the output and substitute .xml suffix for .ent.
-  local result = execCaptureOutputAsString(command)
-  if result ~= "" then
-    return string.gsub(result, "%.ent$", ".xml", 1)
-  end
-  
-  -- Return nil when there is not entity file.
-  return nil
+--  @return infofile object
+function docbook:getRevhistory()
+  return revhistory.create(self.main_file)
 end
 
 
+---------------------- WILL BE MOVED TO XML LIB -------------------------
 --
 --- Function that finds the entity file. 
 --
@@ -137,93 +91,6 @@ function docbook:findEntityFile()
   
   -- Return nil when there is not entity file.
   return nil
-end
-
-
---
---- Function that finds document type and returns it. The type can be Book, Article or Set.
---
---  @return 'Book', 'Article' or 'Set' string according to type of book.
-function docbook:getDocumentType()  
-  local default_type = "Book"
-  
-  -- Get if there si Book_Info.xml or Article_Info.xml
-  local command = "cat " .. path.compose(self.path, self.conf_file_name) .. " 2>/dev/null | grep -E '^[ \t]*type:[ \t]*.*' | awk '{ print $2 }' | sed 's/[[:space:]]//g'"
-   
-  -- Book or Article, execute command and return its output.
-  local output = execCaptureOutputAsString(command)  
-  
-  -- In case that type is not mentioned in publican.cfg, default type is used.
-  if output == "" then
-    output = default_type
-  end
-  
-  return output
-end
-
-
---
---- Function that parse content of 'element' from Book(Article)_Info.xml
---
---  @param element name of the element
---  @return content of this element
-function docbook:getElementFromInfoXML(element)
-  if element == nil then
-    return nil
-  end
-  
-  -- Get document type.
-  local document_type = self:getDocumentType()
-  
-  -- Parse Book(Article)_Info.xml and return content of element which we need.
-  local xmlObj = xml.create(path.compose(self.language, document_type .. "_Info.xml"))
-  xmlObj:setXinclude(0)
-  return xmlObj:getFirstElement(element)
-end
-
-
---
---- Function that finds document title and returns it.
---
---  @return document title as string.
-function docbook:getDocumentTitle()
-  return self:getElementFromInfoXML("title")
-end
-
-
---
---- Function that finds product name and returns it.
---
---  @return  product name as string.
-function docbook:getProductName()
-  return self:getElementFromInfoXML("productname")
-end
-
-
---
---- Function that finds product version and returns it.
---
---  @return product version as string.
-function docbook:getProductVersion()
-  return self:getElementFromInfoXML("productnumber")
-end
-
-
---
---- Function that parse values from publican.cfg file.
---
---  @param item_name is name of value which we want to find. The name without colon.
---  @return the value.
-function docbook:getPublicanOption(item_name)
-  local command = "cat " .. path.compose(self.path, self.conf_file_name) .. " | grep -E '^[ \t]*" .. item_name .. ":[ \t]*.*' | sed 's/^[^:]*://'"
-   
-  -- Execute command, trim output and return it.
-  local output = string.trimString(execCaptureOutputAsString(command))
-  if output == "" then
-    return nil
-  end
-  
-  return output
 end
 
 
@@ -263,28 +130,4 @@ function docbook:getEntityValue(entityName)
   -- If it was found then return result. 
   return output
 end
-
-
-
-
----------------------- NEW FUNCTIONS ---------
-
-
-
---- Creates infofile object and return it. From this object you can get
---  information which are in book(article)info tag. 
---
---  @return infofile object
-function docbook:getInfoFile()
-  return infofile.create(self.path)
-end
-
-
---- Creates authorgroup object and return it. From this object you can get
---  information which are in authorgroup tag. 
---
---  @return infofile object
-function docbook:getAuthorGroup()
-  return authorgroup.create(self.path)
-end
-
+--------------------------------------------------------------------------------
