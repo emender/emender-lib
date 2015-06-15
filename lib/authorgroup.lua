@@ -40,13 +40,21 @@ end
 
 
 --
+--- 
+--
+--
+function authorgroup:findContent(xpath)
+  local xmlObj = xml.create(self.file)
+  
+  return xmlObj:getElements(xpath)
+end
+
+--
 --- Function that finds the firstnames of all authors.
 --
 --  @return table with firstnames of all authors. Nil when no author was found.
 function authorgroup:firstnames()
-  local xmlObj = xml.create(self.file)
-  
-  return xmlObj:getElements("authorgroup/author/firstname")
+  return self:findContent("authorgroup/author/firstname")
 end
 
 
@@ -56,9 +64,7 @@ end
 --
 --  @return table with surnames of all authors. Nil when no author was found.
 function authorgroup:surnames()
-  local xmlObj = xml.create(self.file)
-  
-  return xmlObj:getElements("authorgroup/author/surname")
+  return self:findContent("authorgroup/author/surname")
 end
 
 
@@ -67,7 +73,14 @@ end
 --
 --  @return table with emails of all authors. Nil when no author was found.
 function authorgroup:emails()
-  local xmlObj = xml.create(self.file)
-  
-  return xmlObj:getElements("authorgroup/author/email")
+  return self:findContent("authorgroup/author/email")
+end
+
+
+--
+--- Function that finds all orgdiv elements and return their content.
+--
+--  @return table with content of all orgdivs elements. Nil when no orgdiv element was found. 
+function authorgroup:orgdiv()
+  return self:findContent("authorgroup/author/affiliation/orgdiv")
 end
