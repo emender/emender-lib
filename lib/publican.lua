@@ -192,7 +192,7 @@ function publican:matchPublicanOption(pattern)
   local result_list = {}
   local found = false
   for name, value in pairs(all_options) do 
-    if value:match(pattern) then
+    if name:match(pattern) then
       result_list[name] = value
       found = true
     end
