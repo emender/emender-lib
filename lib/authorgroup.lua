@@ -42,8 +42,8 @@ end
 --
 --- Function that finds the firstnames of all authors.
 --
---  @return table with firstnames of all authors.
-function authorgroup:authorsFirstname()
+--  @return table with firstnames of all authors. Nil when no author was found.
+function authorgroup:firstnames()
   local xmlObj = xml.create(self.file)
   
   return xmlObj:getElements("authorgroup/author/firstname")
@@ -54,8 +54,8 @@ end
 --
 --- Function that finds the surnames of all authors.
 --
---  @return table with surnames of all authors.
-function authorgroup:authorsSurname()
+--  @return table with surnames of all authors. Nil when no author was found.
+function authorgroup:surnames()
   local xmlObj = xml.create(self.file)
   
   return xmlObj:getElements("authorgroup/author/surname")
@@ -65,8 +65,8 @@ end
 --
 --- Function that finds the emails of all authors.
 --
---  @return table with emails of all authors.
-function authorgroup:email()
+--  @return table with emails of all authors. Nil when no author was found.
+function authorgroup:emails()
   local xmlObj = xml.create(self.file)
   
   return xmlObj:getElements("authorgroup/author/email")
