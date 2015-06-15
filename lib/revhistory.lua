@@ -77,6 +77,7 @@ function revhistory:lastDate()
     return nil
   end
   
+  -- return the last added item
   return dates[1]
 end
 
@@ -101,6 +102,7 @@ function revhistory:lastRevisionNumber()
     return nil
   end
   
+  -- return the last added item
   return rev_nums[1]
 end
 
@@ -118,13 +120,14 @@ end
 --
 --- Function that choose only last member element and return its content.
 --
---  @return last revision number as string. In case that there is no revision number, return nil.
+--  @return last member as string. In case that there is no member, return nil.
 function revhistory:lastMember()
-  local rev_nums = self:members()
+  local members = self:members()
   
-  if not rev_nums then
+  if not members then
     return nil
   end
   
-  return rev_nums[1]
+  -- return the last added item
+  return members[1]
 end
