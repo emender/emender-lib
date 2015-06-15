@@ -181,7 +181,7 @@ function publican:getDocumentType()
 end
 
 --
---- Function that allows find all options from publican.cfg which match pattern.
+--- Function that allows find all options from publican.cfg which names match pattern.
 --
 --  @param pattern by which options will be found.
 --  @return table with options which match the pattern in this form: key = name_of_option, value = value_of_option.
