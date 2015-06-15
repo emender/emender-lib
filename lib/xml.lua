@@ -191,6 +191,7 @@ end
 --  @param xpath defines path to the elements. If namespace is defined then use namespace 'newnamespace' prefix(i.e. //newnamespace:elem/newnamespace:test).
 --  @return table where each item is content of one element. Otherwise, it returns nil.
 function xml:parseXml(xpath, namespace)
+  print("Xpath:" .. xpath)
   -- Check whether xpath parameter is set.
   if not xpath then
     return nil
@@ -199,12 +200,12 @@ function xml:parseXml(xpath, namespace)
   -- Namespace check
   local new_ns = ""
   if namespace ~= nil then
-    new_ns = "-N newnamespace='" .. namespace .. "' "
+    new_ns = "xmlns:newnamespace=\"" .. namespace .. "\" "
   else 
     new_ns = ""
   end
 
-  local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
+  local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" .. new_ns .. "><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
   local xinclude = ""
   
   -- Turn on xincludes.
