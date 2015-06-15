@@ -127,7 +127,7 @@ end
 --
 --  @param item_name is name of value which we want to find. The name without colon.
 --  @return the value.
-function publican:getPublicanOption(item_name)
+function publican:getOption(item_name)
   local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[ \t]*" .. item_name .. ":[ \t]*.*' | sed 's/^[^:]*://'"
    
   -- Execute command, trim output and return it.
@@ -144,7 +144,7 @@ end
 --- Function that fetch all options from pulican configuration file.
 --
 --  @return table with all publican options.
-function publican:getAllPublicanOptions()
+function publican:getAllOptions()
   local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[^#][ \t]*.*:[ \t]*.*'"
    
   -- Execute command, trim output and return it.
@@ -185,7 +185,7 @@ end
 --
 --  @param pattern by which options will be found.
 --  @return table with options which match the pattern in this form: key = name_of_option, value = value_of_option.
-function publican:matchPublicanOption(pattern) 
+function publican:matchOption(pattern) 
   local all_options = self:getAllPublicanOptions()
   
   -- Go through all options and choose only those which match the pattern.
