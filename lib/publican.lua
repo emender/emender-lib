@@ -55,7 +55,7 @@ function publican.create(conf_file, new_path)
   end
   
   -- Get language code from publican cfg file.
-  publ.language = publ:getPublicanOption("xml_lang")
+  publ.language = publ:getOption("xml_lang")
   
   -- TEMPORARY - default language is en-US:
   if not publ.language then 
@@ -170,7 +170,7 @@ end
 function publican:getDocumentType()  
   local default_type = "Book"
   
-  local d_type = self:getPublicanOption("type")  
+  local d_type = self:getOption("type")  
   
   -- In case that type is not mentioned in publican.cfg, default type is used.
   if d_type == "" then
@@ -186,7 +186,7 @@ end
 --  @param pattern by which options will be found.
 --  @return table with options which match the pattern in this form: key = name_of_option, value = value_of_option.
 function publican:matchOption(pattern) 
-  local all_options = self:getAllPublicanOptions()
+  local all_options = self:getAllOptions()
   
   -- Go through all options and choose only those which match the pattern.
   local result_list = {}
