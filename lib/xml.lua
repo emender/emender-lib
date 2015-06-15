@@ -191,7 +191,6 @@ end
 --  @param xpath defines path to the elements. If namespace is defined then use namespace 'newnamespace' prefix(i.e. //newnamespace:elem/newnamespace:test).
 --  @return table where each item is content of one element. Otherwise, it returns nil.
 function xml:parseXml(xpath, namespace)
-  print("Xpath:" .. xpath)
   -- Check whether xpath parameter is set.
   if not xpath then
     return nil
