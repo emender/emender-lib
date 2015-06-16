@@ -113,7 +113,7 @@ end
 --  @return table with content of all member elements.
 --          In case that there is no revision number, it returns nil.
 function revhistory:members()
-  return self:findContent("revision/simplelist/member")  
+  return self:findContent("revision/revdescription/simplelist/member")  
 end
 
 
