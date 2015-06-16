@@ -196,6 +196,10 @@ function xml:parseXml(xpath, namespace)
     return nil
   end
   
+  -- Substitute all double quotes in xpath by &quot;, because all values of attributes in xslt are in double quotes. 
+  -- So, another doublequote in the value would make problems.
+  xpath = xpath:gsub('"', "&quot;")
+  
   -- Namespace check
   local new_ns = ""
   if namespace ~= nil then
@@ -203,7 +207,7 @@ function xml:parseXml(xpath, namespace)
   else 
     new_ns = ""
   end
-
+  
   local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" .. new_ns .. "><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
   local xinclude = ""
   
