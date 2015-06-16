@@ -44,7 +44,7 @@ end
 --
 --  @param element name of the element
 --  @return content of this element
-function infofile:getOneElement(element)
+function infofile:findContent(element)
   if element == nil then
     return nil
   end
@@ -62,7 +62,7 @@ end
 --  @return document title as string.
 function infofile:documentTitle()
   -- Find title element.
-  local title = self:getOneElement("title")
+  local title = self:findContent("title")
   
   -- Check whether there is title
   if title then
@@ -78,7 +78,7 @@ end
 --
 --  @return document subtitle as string.
 function infofile:documentSubtitle()
-  local subtitle = self:getOneElement("subtitle")
+  local subtitle = self:findContent("subtitle")
   
   -- Check whether there is subtitle.
   if subtitle then
@@ -94,7 +94,7 @@ end
 --
 --  @return  product name as string.
 function infofile:productName()
-  local productname = self:getOneElement("productname")
+  local productname = self:findContent("productname")
   
   if productname then
     return productname[1]
@@ -109,7 +109,7 @@ end
 --
 --  @return product version as string.
 function infofile:productVersion()
-  local productnumber = self:getOneElement("productnumber")
+  local productnumber = self:findContent("productnumber")
   
   if productnumber then
     return productnumber[1]
@@ -124,7 +124,7 @@ end
 --
 --  @return product keywords in table, one item for each keyboard.
 function infofile:keywords()
-  return self:getOneElement("keywordset/keyword")
+  return self:findContent("keywordset/keyword")
 end
 
 
@@ -133,7 +133,7 @@ end
 --
 --  @return product abstract as string.
 function infofile:abstract()
-  local abstract = self:getOneElement("abstract")
+  local abstract = self:findContent("abstract")
   
   if abstract then
     return abstract[1]
@@ -141,8 +141,4 @@ function infofile:abstract()
   
   return nil
 end
-
-
-
-
 
