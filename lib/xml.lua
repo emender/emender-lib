@@ -225,8 +225,11 @@ function xml:parseXml(xpath, namespace)
   -- Execute command.
   local result_table = execCaptureOutputAsTable(command)
   
+  -- Remove last empty line. TODO: Edit in xslt.
+  result_table[#result_table] = nil
+  
   -- If there is no found item then return nil.
-  if result_table[1] == "" then
+  if not result_table[1] then
     return nil
   end
   
