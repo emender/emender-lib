@@ -346,3 +346,51 @@ function xml:getAttributesOfElement(attribute, element, namespace)
   -- Return result of finding.
   return table
 end
+
+
+--
+--- Function that finds any entity value in main file. If main file has .ent suffix
+--  then this function will search only in this file. If main file has .xml suffix 
+--  and xinclude option is enabled then it uses xincludes and tries to find entity in whole document.
+-- 
+--  @param entityName name of entity which this function will find.
+--  @return value of the entity
+function xml:getEntityValue(entityName)
+  if entityName == nil then
+    return nil
+  end
+  
+  -- Find entity file
+  local ent_file = self.file
+  
+  local print_file_cmd = ""
+  
+  -- Check whether it is necessary to use xinclude.
+  if not ent_file:match(".*%.ent") and self.xinclude > 0 then
+    print_file_cmd = "xmllint --xinclude " .. ent_file .. " 2>/dev/null"
+  else
+    print_file_cmd = "cat " .. ent_file
+  end
+  
+  -- Check whether entity file was found.
+  if ent_file == nil then
+    return nil
+  end
+  
+  -- Compose command for parsing entity value.
+  local grep = "grep \""
+  local sed_one = "sed 's/^<!ENTITY " .. entityName:upper() .. " //'"
+  local sed_two = "sed 's/>$//'"
+  local command = print_file_cmd .. " | " .. grep .. entityName:upper() .. "\" | " .. sed_one ..  " | " .. sed_two
+  
+  local output = string.trimString(execCaptureOutputAsString(command))
+  
+  -- Check whether entity was found.
+  if output == "" then
+    return nil
+  end
+  
+  -- If it was found then return result. 
+  return output
+end
+
