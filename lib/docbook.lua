@@ -27,7 +27,9 @@ function docbook.create(file_path)
   -- Empty object.
   local docb = {}
   
-  if not path.file_exists(file_path) then  
+  if not file_path then
+    fail("You have to set main file of docbook document.")
+  elseif not path.file_exists(file_path) then  
     fail("File '" .. file_path .. "' does not exist.")
   end
   
