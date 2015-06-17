@@ -69,6 +69,6 @@ end
 --  information which are in revhistory tag. 
 --
 --  @return infofile object
-function docbook:getRevhistory()
+function docbook:getRevHistory()
   return revhistory.create(self.main_file)
 end
