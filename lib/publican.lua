@@ -43,12 +43,13 @@ function publican.create(conf_file, new_path)
     new_path = ""
   end
   
-  publ.path = new_path
-  publ.configuration_file = conf_file 
-  
   -- Set metatable for new object.
   setmetatable(publ, publican)
-
+  
+  publ.path = new_path
+  publ.configuration_file = conf_file
+  publ.options = publ:fetchOptions()
+  
   -- Check whether configuration file exists.
   if not publ:isPublicanProject() then
     return nil 
@@ -101,6 +102,29 @@ end
 
 
 --
+--- Function that fetch all commands from publican configuration file
+--
+--  @return table with all options in this form: [name]=value
+function publican:fetchOptions()
+  -- compose command.
+  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[^#][ \t]*.*:[ \t]*.*'"
+   
+  -- Execute command, trim output and return it.
+  local output = execCaptureOutputAsTable(command)
+  
+  -- Prepare list for trimmed output.
+  local trimmed_output = {}
+  for _, item in ipairs(output) do
+    name, value = publican.parseNameAndValue(item)
+    trimmed_output[name] = value
+  end
+  
+  -- Return table with name and value of the option.
+  return trimmed_output
+end
+  
+
+--
 --- Function that finds the file where the document starts.
 --
 --  @return path to the file from current directory 
@@ -127,38 +151,17 @@ end
 --
 --  @param item_name is name of value which we want to find. The name without colon.
 --  @return the value.
-function publican:getOption(item_name)
-  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[ \t]*" .. item_name .. ":[ \t]*.*' | sed 's/^[^:]*://'"
-   
-  -- Execute command, trim output and return it.
-  local output = string.trimString(execCaptureOutputAsString(command))
-  if output == "" then
-    return nil
-  end
-  
-  return output
+function publican:getOption(item_name)  
+  return self.options[item_name]
 end
 
 
 --
---- Function that fetch all options from pulican configuration file.
+--- Function that return all options from pulican configuration file.
 --
---  @return table with all publican options.
+--  @return table with all publican options in this form: [name]=value
 function publican:getAllOptions()
-  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[^#][ \t]*.*:[ \t]*.*'"
-   
-  -- Execute command, trim output and return it.
-  local output = execCaptureOutputAsTable(command)
-  
-  -- Prepare list for trimmed output.
-  local trimmed_output = {}
-  for _, item in ipairs(output) do
-    name, value = publican.parseNameAndValue(item)
-    trimmed_output[name] = value
-  end
-  
-  -- Return table with name and value of the option.
-  return trimmed_output
+  return self.options
 end
   
   
@@ -185,13 +188,12 @@ end
 --
 --  @param pattern by which options will be found.
 --  @return table with options which match the pattern in this form: key = name_of_option, value = value_of_option.
-function publican:matchOption(pattern) 
-  local all_options = self:getAllOptions()
-  
+function publican:matchOption(pattern)   
   -- Go through all options and choose only those which match the pattern.
   local result_list = {}
   local found = false
-  for name, value in pairs(all_options) do 
+  
+  for name, value in pairs(self.options) do 
     if name:match(pattern) then
       result_list[name] = value
       found = true
