@@ -185,6 +185,18 @@ end
 
 
 --
+--- Function that subtitutes double quotes and apostrophes with &quot; and &apos;.
+--
+--  @param xpath string
+--  @return edited xpath
+function xml.prepareXpath(xpath)
+  local str = xpath:gsub('"', "&quot;")
+  str = str:gsub("'", "&apos;")
+
+  return str
+end
+
+--
 --- Function that find all elements defined by xpath and get content of these elements.
 --
 --  @param namespace (if there is no namespace, then set this argument to empty string). For example: r=http://example.namespace.com
@@ -197,8 +209,8 @@ function xml:parseXml(xpath, namespace)
   end
   
   -- Substitute all double quotes in xpath by &quot;, because all values of attributes in xslt are in double quotes. 
-  -- So, another doublequote in the value would make problems.
-  xpath = xpath:gsub('"', "&quot;")
+  -- So, another doublequote in the value would make problems. Then all apostrophes are subtituted by &apos;
+  xpath = self.prepareXpath(xpath)
   
   -- Namespace check
   local new_ns = ""
