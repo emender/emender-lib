@@ -96,6 +96,7 @@ function publican.parseNameAndValue(str)
   -- Run iterator function to get name and value.
   name, value = match_f()
   
+  print(name,value)
   -- Return name and trimmed value.
   return name, string.trimString(value)
 end
@@ -106,17 +107,17 @@ end
 --
 --  @return table with all options in this form: [name]=value
 function publican:fetchOptions()
-  -- compose command.
-  local command = "cat " .. path.compose(self.path, self.configuration_file) .. " | grep -E '^[^#][ \t]*.*:[ \t]*.*'"
-   
   -- Execute command, trim output and return it.
-  local output = execCaptureOutputAsTable(command)
+  local output = slurpTable(path.compose(self.path, self.configuration_file))
   
   -- Prepare list for trimmed output.
   local trimmed_output = {}
   for _, item in ipairs(output) do
-    name, value = publican.parseNameAndValue(item)
-    trimmed_output[name] = value
+    -- If line starts with # then skip this item because it is comment.
+    if item:match("^[^#]") then
+      name, value = publican.parseNameAndValue(item)
+      trimmed_output[name] = value
+    end
   end
   
   -- Return table with name and value of the option.
@@ -208,9 +209,3 @@ function publican:matchOption(pattern)
   -- Return list witch only options which match the pattern.
   return result_list
 end
-
-
-
-
-
-
