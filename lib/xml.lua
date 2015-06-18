@@ -61,19 +61,6 @@ function xml.create(file_name, xinclude)
   return x
 end
 
---[[
-  xslt for getting whole content of bookinfo. TODO: make it nicer..
-
-<?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-  <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
-  <xsl:template match="/">
-    <xsl:copy-of select="book/bookinfo/node()"/>
-  </xsl:template>
-</xsl:stylesheet>
-
-]]
-
 
 --
 --- Setter for xinclude attribute.
@@ -189,11 +176,11 @@ end
 --
 --  @param xpath string
 --  @return edited xpath
-function xml.prepareXpath(xpath)
-  local str = xpath:gsub('"', "&quot;")
-  str = str:gsub("'", "&apos;")
+function xml.escapeDynamicPart(str)
+  local out = str:gsub('"', "&quot;")
+  out = out:gsub("'", "&apos;")
 
-  return str
+  return out
 end
 
 --
@@ -210,15 +197,19 @@ function xml:parseXml(xpath, namespace)
   
   -- Substitute all double quotes in xpath by &quot;, because all values of attributes in xslt are in double quotes. 
   -- So, another doublequote in the value would make problems. Then all apostrophes are subtituted by &apos;
-  xpath = self.prepareXpath(xpath)
+  xpath = self.escapeDynamicPart(xpath)
   
   -- Namespace check
   local new_ns = ""
   if namespace ~= nil then
+    namespace = self.escapeDynamicPart(namespace)
     new_ns = "xmlns:newnamespace=\"" .. namespace .. "\" "
   else 
     new_ns = ""
   end
+  
+  
+  
   
   local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" .. new_ns .. "><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
   local xinclude = ""
@@ -237,6 +228,8 @@ function xml:parseXml(xpath, namespace)
  
   -- Compose command.
   local command = echo_outer .. echo_inner .. " | " ..  xsltproc .. " - " .. self.file .. " " .. err_redirect .. " | " .. sed .. end_of_command
+ 
+  print(command)
   
   -- Execute command.
   local result_table = execCaptureOutputAsTable(command)
@@ -246,6 +239,7 @@ function xml:parseXml(xpath, namespace)
   
   -- If there is no found item then return nil.
   if not result_table[1] then
+    print("EMPTYYYY")
     return nil
   end
   
@@ -378,7 +372,6 @@ function xml:getEntityValue(entityName)
   
   -- Find entity file
   local ent_file = self.file
-  
   local print_file_cmd = ""
   
   -- Check whether it is necessary to use xinclude.
