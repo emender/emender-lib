@@ -96,7 +96,6 @@ function publican.parseNameAndValue(str)
   -- Run iterator function to get name and value.
   name, value = match_f()
   
-  print(name,value)
   -- Return name and trimmed value.
   return name, string.trimString(value)
 end
