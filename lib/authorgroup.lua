@@ -40,9 +40,10 @@ end
 
 
 --
---- 
+--- Function that find content of element determined by xpath parameter.
 --
---
+--  @param xpath for determining what you want to find
+--  @return table with content of elements.
 function authorgroup:findContent(xpath)
   local xmlObj = xml.create(self.file)
   
