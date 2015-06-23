@@ -128,21 +128,29 @@ end
 --- Function that finds the file where the document starts.
 --
 --  @return path to the file from current directory 
-function publican:findMainFile()  
-  local content_dir = path.compose(self.path, self.language)
+function publican:findMainFile() 
+  local main_file = getOption("mainfile")
   
-  -- Lists the files in language directory.
-  local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
-  
-  -- Execute command and return the output and substitute .xml suffix for .ent.
-  local result = execCaptureOutputAsString(command)
-  
-  if result ~= "" then
-    return string.gsub(result, "%.ent$", ".xml", 1)
+  -- If mainfile option was found then return mainfile and add xml suffix.
+  if main_file then
+    return main_file .. ".xml"
+  else
+    -- If mainfile option was not found then try to find entity file and use its name.
+    local content_dir = path.compose(self.path, self.language)
+    
+    -- Lists the files in language directory.
+    local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
+    
+    -- Execute command and return the output and substitute .xml suffix for .ent.
+    local result = execCaptureOutputAsString(command)
+    
+    if result ~= "" then
+      return string.gsub(result, "%.ent$", ".xml", 1)
+    end
+    
+    -- Return nil when there is not entity file.
+    return nil
   end
-  
-  -- Return nil when there is not entity file.
-  return nil
 end
 
 
