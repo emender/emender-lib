@@ -228,8 +228,6 @@ function xml:parseXml(xpath, namespace)
  
   -- Compose command.
   local command = echo_outer .. echo_inner .. " | " ..  xsltproc .. " - " .. self.file .. " " .. err_redirect .. " | " .. sed .. end_of_command
- 
-  print(command)
   
   -- Execute command.
   local result_table = execCaptureOutputAsTable(command)
@@ -239,7 +237,6 @@ function xml:parseXml(xpath, namespace)
   
   -- If there is no found item then return nil.
   if not result_table[1] then
-    print("EMPTYYYY")
     return nil
   end
   
