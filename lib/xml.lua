@@ -371,16 +371,16 @@ function xml:getEntityValue(entityName)
   local ent_file = self.file
   local print_file_cmd = ""
   
+  -- Check whether entity file was found.
+  if not ent_file then
+    return nil
+  end
+  
   -- Check whether it is necessary to use xinclude.
   if not ent_file:match(".*%.ent") and self.xinclude > 0 then
     print_file_cmd = "xmllint --xinclude " .. ent_file .. " 2>/dev/null"
   else
     print_file_cmd = "cat " .. ent_file
-  end
-  
-  -- Check whether entity file was found.
-  if ent_file == nil then
-    return nil
   end
   
   -- Compose command for parsing entity value.
@@ -400,3 +400,23 @@ function xml:getEntityValue(entityName)
   return output
 end
 
+
+--
+--- More specific function which change extension of the file (set in the constructor)
+--  to the 'ent' (no matter what was the original extension) and tries to find entity name in it.
+--
+--  @param entityName name of entity which this function will find.
+--  @return value of the entity
+function xml:getEntityValueSpecific(entityName) 
+    -- Swap extension of file to the 'ent'.
+    local file_bcp = self.file
+    self.file = self.file:gsub("%.%w+$", ".ent")
+    
+    -- Find entity name in new file.
+    local output = self:getEntityValue(entityName)
+   
+    -- Set back the original file name.
+    self.file = file_bcp
+    
+    return output
+end
