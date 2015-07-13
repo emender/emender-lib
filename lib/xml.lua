@@ -371,11 +371,6 @@ function xml:getEntityValue(entityName)
   local ent_file = self.file
   local print_file_cmd = ""
   
-  -- Check whether entity file was found.
-  if not ent_file then
-    return nil
-  end
-  
   -- Check whether it is necessary to use xinclude.
   if not ent_file:match(".*%.ent") and self.xinclude > 0 then
     print_file_cmd = "xmllint --xinclude " .. ent_file .. " 2>/dev/null"
