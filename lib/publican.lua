@@ -129,7 +129,7 @@ end
 --
 --  @return path to the file from current directory 
 function publican:findMainFile() 
-  local main_file = getOption("mainfile")
+  local main_file = self:getOption("mainfile")
   
   -- If mainfile option was found then return mainfile and add xml suffix.
   if main_file then
