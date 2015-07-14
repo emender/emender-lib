@@ -133,7 +133,7 @@ function publican:findMainFile()
   
   -- If mainfile option was found then return mainfile and add xml suffix.
   if main_file then
-    return main_file .. ".xml"
+    return path.compose(self.path, self.language, main_file .. ".xml")
   else
     -- If mainfile option was not found then try to find entity file and use its name.
     local content_dir = path.compose(self.path, self.language)
