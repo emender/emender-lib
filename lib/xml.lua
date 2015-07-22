@@ -415,11 +415,12 @@ end
 
 
 --
---- Function that return readable text from tags mentioned in local variable "tags".
---
+--- Function that return content of more than one tag. 
+--  Parameter 'tags' contains table of tags which content will be found.
+--  
+--  @param tags table of tags from which this function parse content
 --  @return content of tags which contain readable text.
-function xml:getReadableText()
-    local tags = {"para", "title"}
+function xml:getContentOfMoreElements(tags)
     local xpath = ""
     
     -- Compose xpath for find readable text.
