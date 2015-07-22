@@ -208,9 +208,6 @@ function xml:parseXml(xpath, namespace)
     new_ns = ""
   end
   
-  
-  
-  
   local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" .. new_ns .. "><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
   local xinclude = ""
   
@@ -415,3 +412,33 @@ function xml:getEntityValueSpecific(entityName)
     
     return output
 end
+
+
+--
+--- Function that return readable text from tags mentioned in local variable "tags".
+--
+--  @return content of tags which contain readable text.
+function xml:getReadableText()
+    local tags = {"para", "title"}
+    local xpath = ""
+    
+    -- Compose xpath for find readable text.
+    for i, oneTag in ipairs(tags) do
+        local orMark = " | "
+        local startMark = "//"
+        local text = "/text()"
+        
+        oneTag = startMark .. oneTag .. text
+        
+        -- Add OR operator between every xpath.
+        if i > 1 then
+            oneTag = orMark .. oneTag
+        end
+        
+        xpath = xpath .. oneTag
+    end
+    
+    -- Return whole text.
+    return self:parseXml(xpath)
+end
+
