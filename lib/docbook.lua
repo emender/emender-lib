@@ -72,3 +72,15 @@ end
 function docbook:getRevHistory()
   return revhistory.create(self.main_file)
 end
+
+
+--
+--- Function which get readable text from docbook document. 
+-- 
+--  @return table with content
+function docbook:getReadableText()
+    local xmlObj = xml.create(self.main_file)
+
+    return xmlObj:getContentOfMoreElements({"para", "title"})
+end
+
