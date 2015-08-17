@@ -207,7 +207,7 @@ function xml:parseXml(xpath, namespace)
   else 
     new_ns = ""
   end
-  
+
   local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" .. new_ns .. "><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
   local xinclude = ""
   
@@ -217,8 +217,8 @@ function xml:parseXml(xpath, namespace)
   end
   
   local err_redirect = "2>/dev/null"
-  local echo_outer = "echo -e `"
-  local echo_inner = "echo " .. xslt_definition
+  local echo_outer = "/bin/echo -e `"
+  local echo_inner = "/bin/echo " .. xslt_definition
   local xsltproc = "xsltproc " .. xinclude
   local sed = "sed -e 's/\\xC2\\xA0/ /g'"
   local end_of_command = "`"
@@ -228,7 +228,7 @@ function xml:parseXml(xpath, namespace)
   
   -- Execute command.
   local result_table = execCaptureOutputAsTable(command)
-  
+
   -- Remove last empty line. TODO: Edit in xslt.
   result_table[#result_table] = nil
   
