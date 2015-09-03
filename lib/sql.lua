@@ -64,7 +64,7 @@ end
 --  @return table with the output of the query,
 function sql:executeQuery(query)
     -- Compose commanf for executing query
-    local command = "slqite3 \"" .. self.file .. "\" \"" .. query .. "\""
+    local command = "sqlite3 \"" .. self.file .. "\" \"" .. query .. "\""
 
     -- Execute command.
     local output = execCaptureOutputAsTable(command)
