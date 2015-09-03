@@ -16,7 +16,7 @@
 
 -- Define the class and set of tools which has to be installed:
 sql = {requires = {"sqlite3"}}
-sql.__index = sqlite3
+sql.__index = sql
 
 
 --
@@ -24,28 +24,34 @@ sql.__index = sqlite3
 --
 --  @param file_name Name of the database file.
 --  @return sqlite3 object.
-function sqlite3.create(fileName)
-  if fileName == nil then
-    fail("File name has to be set.")
-    return nil
-  end
+function sql.create(fileName)
+    if not fileName then
+        fail("File name has to be set.")
+        return nil
+    end
 
-  local s = {}
-  s.file = fileName
+    local s = {}
+    s.file = fileName
 
-  -- Add this class as metatable of new created object (table).
-  setmetatable(s, sql)
+    -- Add this class as metatable of new created object (table).
+    setmetatable(s, sql)
 
-  -- Return the new object
-  return s
+    -- Check whether file exists.
+    if not path.file_exists(s.file) then
+        fail("Database file does not exist.")
+        return nil
+    end
+
+    -- Return the new object
+    return s
 end
 
 
 --
 --- Get schema of database and return it as string
 --
---  @return database schema.
-function slq:getDBSchema()
+--  @return database schema as string.
+function sql:getDBSchema()
     -- Compose command.
     local command = "sqlite3 \"" .. self.file .. "\" \".schema\""
 
