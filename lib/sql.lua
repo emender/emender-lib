@@ -68,7 +68,7 @@ end
 --
 --  @param query which will be executed
 --  @return table with the output of the query,
-function sql:executeQuery(query)
+function sql:executeQueryGetAll(query)
     -- Compose commanf for executing query
     local command = "sqlite3 \"" .. self.file .. "\" \"" .. query .. "\""
 
@@ -77,4 +77,21 @@ function sql:executeQuery(query)
 
     -- Return the output.
     return output
+end
+
+
+--
+--- Execute slq query (and return only first result).
+--
+--  @param query which will be executed
+--  @return the first line from output,
+function sql:executeQueryGetFirst(query)
+    -- Compose commanf for executing query
+    local command = "sqlite3 \"" .. self.file .. "\" \"" .. query .. "\""
+
+    -- Execute command.
+    local output = execCaptureOutputAsTable(command)
+
+    -- Return the output.
+    return output[1]
 end
