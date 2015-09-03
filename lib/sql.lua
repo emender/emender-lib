@@ -58,12 +58,17 @@ end
 
 
 --
----
+--- Execute slq query.
 --
---
-function sql:executeQuery()
+--  @param query which will be executed
+--  @return table with the output of the query,
+function sql:executeQuery(query)
+    -- Compose commanf for executing query
+    local command = "slqite3 \"" .. self.file .. "\" \"" .. query .. "\""
 
+    -- Execute command.
+    local output = execCaptureOutputAsTable(command)
 
-
-
+    -- Return the output.
+    return output
 end
