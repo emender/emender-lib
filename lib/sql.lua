@@ -75,6 +75,11 @@ function sql:executeQueryGetAll(query)
     -- Execute command.
     local output = execCaptureOutputAsTable(command)
 
+    -- Return nil when table is empty.
+    if table.isEmpty(output) then
+        return nil
+    end
+    
     -- Return the output.
     return output
 end
