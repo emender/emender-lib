@@ -67,12 +67,13 @@ end
 --- Function that find id of last inserted row.
 --
 --  @return last insert id as string
-function sql:lastInsertedRowId()
+function sql:lastRowId(tableName)
     -- Compose command for getting last inserted row.
-    local command = "sqlite3 \"" .. self.file .. "\" \".last_insert_rowid()"
+    local command = "sqlite3 \"" .. self.file .. "\" \"SELECT MAX(id) FROM " .. tableName .. ";\""
 
     -- Execute command.
     local output = execCaptureOutputAsString(command)
+    print("output: ", output)
 
     -- Return the output.
     return output
