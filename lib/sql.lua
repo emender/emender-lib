@@ -73,7 +73,6 @@ function sql:lastRowId(tableName)
 
     -- Execute command.
     local output = execCaptureOutputAsString(command)
-    print("output: ", output)
 
     -- Return the output.
     return output
