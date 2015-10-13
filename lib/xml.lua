@@ -15,7 +15,9 @@
 
 
 -- Define the class and set of tools which has to be installed:
-xml = {requires = {"xsltproc"}}
+    -- There is xmllint because of getting whole xml source (without any changes,
+    -- just xincluded). It is not possible with XSLT.
+xml = {requires = {"xsltproc", "xmllint"}}
 xml.__index = xml
 
 
@@ -406,6 +408,27 @@ function xml:getEntityValue(entityName)
 end
 
 
+--[[ TODO: complete this
+--- This function parses all enitities from currently set file. So, you have to
+--  set proper file to the object. In case that in the file is no entity
+--  then the function returns nil.
+--
+--
+--
+function xml:fetchAllEntitiesIntoTable()
+    local entitiesTable = {}
+
+    -- Get content of entity file.
+    local content = slurpTable(self.file)
+
+    for _, line in ipairs(content) do
+        -- Find entity
+    end
+
+    return entitiesTable
+end
+]]
+
 --
 --- More specific function which change extension of the file (set in the constructor)
 --  to the 'ent' (no matter what was the original extension) and tries to find entity name in it.
@@ -454,4 +477,26 @@ function xml:getContentOfMoreElements(tags)
 
     -- Return whole text.
     return self:parseXml(xpath)
+end
+
+
+--
+--- Function that gets whole xml document with or without xincludes, depends on object attribute.
+--  Get the whole documant as string is possible using this function and table.concat(...) function.
+--
+--  @return table with whole xml source (one item == one line)
+function xml:getWholeXMLSource()
+    local xinclude = ""
+    local err_redirect = "2>/dev/null"
+
+    -- If xinclude is set to 1 use xincules here, too.
+    if self.xinclude > 0 then
+        xinclude = "--xinclude"
+    end
+
+    -- Compose command.
+    local command = "xmllint " .. xinclude .. " '" .. self.file .. "' " .. err_redirect
+
+    -- Execute command and return the output.
+    return execCaptureOutputAsTable(command)
 end
