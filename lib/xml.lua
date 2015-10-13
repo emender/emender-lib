@@ -413,23 +413,35 @@ end
 --  set proper file to the object. In case that in the file is no entity
 --  then the function returns nil.
 --
---  @return table in format entitiesTable[entity] = content
---
+--  @return table in format entitiesTable[entity] = content. In case that in the file
+--                  is no entity, then it returns nil.
 function xml:fetchAllEntitiesIntoTable()
     local entitiesTable = {}
+    local noEntity = true
 
     -- Get content of entity file.
     local content = slurpTable(self.file)
 
+    -- Go through whole content line by line.
     for _, line in ipairs(content) do
-        -- Find entity
+        -- Parse entity from the current line
         local parse = line:gmatch("<!ENTITY%s(%w+)%s([^>]+)>")
         local name, value = parse()
 
-        entitiesTable[name] = value
+        -- Add entity information to the table only when name and value exists.
+        if name and value then
+            entitiesTable[name] = value
+            noEntity = false
+        end
     end
 
-    return entitiesTable
+    -- If there is at least one entity, then return table.
+    if not noEntity then
+        return entitiesTable
+    end
+
+    -- Otherwise return nil -- there is no entity.
+    return nil
 end
 
 
