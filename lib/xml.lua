@@ -408,12 +408,12 @@ function xml:getEntityValue(entityName)
 end
 
 
---[[ TODO: complete this
+--
 --- This function parses all enitities from currently set file. So, you have to
 --  set proper file to the object. In case that in the file is no entity
 --  then the function returns nil.
 --
---
+--  @return table in format entitiesTable[entity] = content
 --
 function xml:fetchAllEntitiesIntoTable()
     local entitiesTable = {}
@@ -423,11 +423,15 @@ function xml:fetchAllEntitiesIntoTable()
 
     for _, line in ipairs(content) do
         -- Find entity
+        local parse = line:gmatch("<!ENTITY%s(%w+)%s([^>]+)>")
+        local name, value = parse()
+
+        entitiesTable[name] = value
     end
 
     return entitiesTable
 end
-]]
+
 
 --
 --- More specific function which change extension of the file (set in the constructor)
