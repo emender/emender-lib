@@ -82,5 +82,5 @@ end
 function docbook:getReadableText()
     local xmlObj = xml.create(self.main_file)
 
-    return xmlObj:getContentOfMoreElements(docb.readableTags)
+    return xmlObj:getContentOfMoreElements(self.readableTags)
 end
