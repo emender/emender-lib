@@ -26,7 +26,7 @@ docbook.__index = docbook
 --  @return New object. When there is some error then it returns nil.
 function docbook.create(file_path)
   -- Empty object.
-  local docb = {}
+  local docb = {["readableTags"] = {"para", "title"}}
 
   if not file_path then
     fail("You have to set main file of docbook document.")
@@ -82,5 +82,5 @@ end
 function docbook:getReadableText()
     local xmlObj = xml.create(self.main_file)
 
-    return xmlObj:getContentOfMoreElements({"para", "title"})
+    return xmlObj:getContentOfMoreElements(docb.readableTags)
 end
