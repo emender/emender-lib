@@ -28,7 +28,7 @@ xml.__index = xml
 --  @param xinclude Enables (1) or disables (0) xincludes. Optional.
 function xml.create(file_name, xinclude)
   if file_name == nil then
-    fail("File name has to be set.")
+    fail("xml.lua: File name has to be set.")
     return nil
   end
 
@@ -45,11 +45,11 @@ function xml.create(file_name, xinclude)
       if xinclude == 1 or xinclude == 0 then
         x.xinclude = xinclude
       else
-        fail("Parameter 'xinclude' has to be 0 or 1, not: '" .. xinclude .. "'.")
+        fail("xml.lua: Parameter 'xinclude' has to be 0 or 1, not: '" .. xinclude .. "'.")
         return nil
       end
     else
-      fail("Parameter 'xinclude' has to be number value. Current type: '" .. type(xinclude) .. "'.")
+      fail("xml.lua: Parameter 'xinclude' has to be number value. Current type: '" .. type(xinclude) .. "'.")
       return nil
     end
   end
@@ -92,10 +92,10 @@ end
 function xml:checkFileVariable()
   -- Check whether file is set and whether file exists.
   if self.file == nil then
-    fail("File was not set.")
+    fail("xml.lua: File was not set.")
     return false
   elseif not path.file_exists(self.file) then
-    fail("File '" .. self.file .. "' does not exist.")
+    fail("xml.lua: File '" .. self.file .. "' does not exist.")
     return false
   end
 

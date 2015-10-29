@@ -32,7 +32,7 @@ publican.__index = publican
 function publican.create(conf_file, new_path)
   -- Check whether name of file is set.
   if conf_file == nil then
-    fail("The name of configuration file has to be set. e.g. 'publican.cfg'")
+    fail("publican.lua: The name of configuration file has to be set. e.g. 'publican.cfg'")
     return nil
   end
   
@@ -75,7 +75,7 @@ function publican:isPublicanProject()
   
   -- Check whether publican.cfg exist.
   if not path.file_exists(self.configuration_file) then
-    fail("File '" .. self.configuration_file .. "' does not exists.")
+    fail("publican.lua: File '" .. self.configuration_file .. "' does not exists.")
     return false
   end
   
@@ -145,6 +145,7 @@ function publican:findMainFile()
     local result = execCaptureOutputAsString(command)
     
     if result ~= "" then
+        print(result)
       return string.gsub(result, "%.ent$", ".xml", 1)
     end
     
