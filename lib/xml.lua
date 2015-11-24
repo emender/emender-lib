@@ -263,14 +263,14 @@ end
 --  @param element name of the element which you want to find.
 --  @return content of the first occurence of element as string. If there is any error or no element was found then the function will return nil.
 function xml:getFirstElement(element, namespace)
-  local table = self:parseXml(self:composeXPathElement(element, namespace), namespace)
+    local table = self:parseXml(self:composeXPathElement(element, namespace), namespace)
 
-  if not table then
-    return nil
-  end
+    if not table then
+        return nil
+    end
 
-  -- Return content of the first found element.
-  return table[1]
+    -- Return content of the first found element.
+    return table[1]
 end
 
 
@@ -280,14 +280,14 @@ end
 --  @param element name of the element which you want to find.
 --  @return table with content of all elements. Each elements content is in each item. If there is any error or no element was found then the function will return nil.
 function xml:getElements(element, namespace)
-  local table = self:parseXml(self:composeXPathElement(element, namespace), namespace)
+    local table = self:parseXml(self:composeXPathElement(element, namespace), namespace)
 
-  if not table then
-    return nil
-  end
+    if not table then
+        return nil
+    end
 
-  -- Return result of finding.
-  return table
+    -- Return result of finding.
+    return table
 end
 
 
@@ -297,14 +297,14 @@ end
 --  @param attribute name of the attribute which you want to find.
 --  @return value of first attribute as string. If there is any error then the function will return nil.
 function xml:getFirstAttribute(attribute, namespace)
-  local table = self:parseXml(self:composeXPathAttribute(attribute, namespace), namespace)
+    local table = self:parseXml(self:composeXPathAttribute(attribute, namespace), namespace)
 
-  if not table then
-    return nil
-  end
+    if not table then
+        return nil
+    end
 
-  -- Return content of the first found attribute.
-  return table[1]
+    -- Return content of the first found attribute.
+    return table[1]
 end
 
 
@@ -314,14 +314,14 @@ end
 --  @param attribute name of the attribute which you want to find.
 --  @return table with values of all attributes with 'attribute' name. If there is any error then the function will return nil.
 function xml:getAttributes(attribute, namespace)
-  local table = self:parseXml(self:composeXPathAttribute(attribute, namespace), namespace)
+    local table = self:parseXml(self:composeXPathAttribute(attribute, namespace), namespace)
 
-  if not table then
-    return nil
-  end
+    if not table then
+        return nil
+    end
 
-  -- Return result of finding.
-  return table
+    -- Return result of finding.
+    return table
 end
 
 
@@ -335,14 +335,14 @@ end
 --  @param namespace namespace url
 --  @return value of the first element with attribute with names which we need.
 function xml:getFirstAttributeOfElement(attribute, element, namespace)
-  local table = self:parseXml(self:composeXPathAttributeElement(attribute, element, namespace), namespace)
+    local table = self:parseXml(self:composeXPathAttributeElement(attribute, element, namespace), namespace)
 
-  if not table then
-    return nil
-  end
+    if not table then
+        return nil
+    end
 
-  -- Return content of the first found attribute
-  return table[1]
+    -- Return content of the first found attribute
+    return table[1]
 end
 
 
@@ -356,14 +356,16 @@ end
 --  @param namespace namespace url
 --  @return value of the first element with attribute with names which we need.
 function xml:getAttributesOfElement(attribute, element, namespace)
-  local table = self:parseXml(self:composeXPathAttributeElement(attribute, element, namespace), namespace)
+    local xpath = self:composeXPathAttributeElement(attribute, element, namespace)
+    print(xpath)
+    local table = self:parseXml(xpath, namespace)
 
-  if not table then
-    return nil
-  end
+    if not table then
+        return nil
+    end
 
-  -- Return result of finding.
-  return table
+    -- Return result of finding.
+    return table
 end
 
 
@@ -375,36 +377,36 @@ end
 --  @param entityName name of entity which this function will find.
 --  @return value of the entity
 function xml:getEntityValue(entityName)
-  if entityName == nil then
-    return nil
-  end
+    if entityName == nil then
+        return nil
+    end
 
-  -- Find entity file
-  local ent_file = self.file
-  local print_file_cmd = ""
+    -- Find entity file
+    local ent_file = self.file
+    local print_file_cmd = ""
 
-  -- Check whether it is necessary to use xinclude.
-  if not ent_file:match(".*%.ent") and self.xinclude > 0 then
-    print_file_cmd = "xmllint --xinclude " .. ent_file .. " 2>/dev/null"
-  else
-    print_file_cmd = "cat " .. ent_file
-  end
+    -- Check whether it is necessary to use xinclude.
+    if not ent_file:match(".*%.ent") and self.xinclude > 0 then
+        print_file_cmd = "xmllint --xinclude " .. ent_file .. " 2>/dev/null"
+    else
+        print_file_cmd = "cat " .. ent_file
+    end
 
-  -- Compose command for parsing entity value.
-  local grep = "grep \""
-  local sed_one = "sed 's/^<!ENTITY " .. entityName:upper() .. " //'"
-  local sed_two = "sed 's/>$//'"
-  local command = print_file_cmd .. " | " .. grep .. entityName:upper() .. "\" | " .. sed_one ..  " | " .. sed_two
+    -- Compose command for parsing entity value.
+    local grep = "grep \""
+    local sed_one = "sed 's/^<!ENTITY " .. entityName:upper() .. " //'"
+    local sed_two = "sed 's/>$//'"
+    local command = print_file_cmd .. " | " .. grep .. entityName:upper() .. "\" | " .. sed_one ..  " | " .. sed_two
 
-  local output = string.trimString(execCaptureOutputAsString(command))
+    local output = string.trimString(execCaptureOutputAsString(command))
 
-  -- Check whether entity was found.
-  if output == "" then
-    return nil
-  end
+    -- Check whether entity was found.
+    if output == "" then
+        return nil
+    end
 
-  -- If it was found then return result.
-  return output
+    -- If it was found then return result.
+    return output
 end
 
 
