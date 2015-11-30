@@ -78,9 +78,12 @@ end
 --
 --- Function which get readable text from docbook document.
 --
+--  @param xinclude - 0 for disabling xincludes, 1 for enabling (default)
 --  @return table with content
-function docbook:getReadableText()
-    local xmlObj = xml.create(self.main_file)
+function docbook:getReadableText(xinclude)
+    if not xinclude then xinclude = 1 end
+    
+    local xmlObj = xml.create(self.main_file, xinclude)
 
     return xmlObj:getContentOfMoreElements(self.readableTags)
 end
