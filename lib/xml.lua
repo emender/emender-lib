@@ -356,9 +356,7 @@ end
 --  @param namespace namespace url
 --  @return value of the first element with attribute with names which we need.
 function xml:getAttributesOfElement(attribute, element, namespace)
-    local xpath = self:composeXPathAttributeElement(attribute, element, namespace)
-    print(xpath)
-    local table = self:parseXml(xpath, namespace)
+    local table = self:parseXml(self:composeXPathAttributeElement(attribute, element, namespace), namespace)
 
     if not table then
         return nil
