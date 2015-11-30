@@ -1,5 +1,5 @@
 -- publican.lua - Class that provides functions for working with publican documents.
--- Copyright (C) 2015 Pavel Vomacka 
+-- Copyright (C) 2015 Pavel Vomacka
 --
 -- This program is free software:  you can redistribute it and/or modify it
 -- under the terms of  the  GNU General Public License  as published by the
@@ -20,8 +20,8 @@ publican.__index = publican
 
 
 --
---- Constructor of the publican class. It allows to set name of publican configuration file 
---  and path to the publican conf file. This function returns new object of this class 
+--- Constructor of the publican class. It allows to set name of publican configuration file
+--  and path to the publican conf file. This function returns new object of this class
 --  when everything is correct, otherwise nil.
 --
 --  Attributes of publican object: path, configuration_file, language
@@ -35,35 +35,35 @@ function publican.create(conf_file, new_path)
     fail("publican.lua: The name of configuration file has to be set. e.g. 'publican.cfg'")
     return nil
   end
-  
+
   -- Create variable for new object.
   local publ = {}
-  
-  if new_path == nil then 
+
+  if new_path == nil then
     new_path = ""
   end
-  
+
   -- Set metatable for new object.
   setmetatable(publ, publican)
-  
+
   publ.path = new_path
   publ.configuration_file = conf_file
   publ.options = publ:fetchOptions()
-  
+
   -- Check whether configuration file exists.
   if not publ:isPublicanProject() then
-    return nil 
+    return nil
   end
-  
+
   -- Get language code from publican cfg file.
   publ.language = publ:getOption("xml_lang")
-  
+
   -- TEMPORARY - default language is en-US:
-  if not publ.language then 
+  if not publ.language then
     publ.language = "en-US"
   end
-  
-  -- Return the new object. 
+
+  -- Return the new object.
   return publ
 end
 
@@ -72,30 +72,30 @@ end
 --
 --  @return true when there is publican. Otherwise false.
 function publican:isPublicanProject()
-  
+
   -- Check whether publican.cfg exist.
   if not path.file_exists(self.configuration_file) then
     fail("publican.lua: File '" .. self.configuration_file .. "' does not exists.")
     return false
   end
-  
+
   return true
 end
 
 
 --
 --- Function that parse given 'name: value' string (line from publican config file).
---  
+--
 --  @return two variables - the first is name of option and the second is value of this option.
 function publican.parseNameAndValue(str)
   -- Pattern with two captures, the first for name, the second for value.
   local match_f = str:gmatch("([^:]*)(.*)")
   local name = ""
   local value = ""
-  
+
   -- Run iterator function to get name and value.
   name, value = match_f()
-  
+
   -- Return name and trimmed value.
   return name, string.trimString(value)
 end
@@ -108,7 +108,7 @@ end
 function publican:fetchOptions()
   -- Execute command, trim output and return it.
   local output = slurpTable(path.compose(self.path, self.configuration_file))
-  
+
   -- Prepare list for trimmed output.
   local trimmed_output = {}
   for _, item in ipairs(output) do
@@ -118,40 +118,40 @@ function publican:fetchOptions()
       trimmed_output[name] = value
     end
   end
-  
+
   -- Return table with name and value of the option.
   return trimmed_output
 end
-  
+
 
 --
 --- Function that finds the file where the document starts.
 --
---  @return path to the file from current directory 
-function publican:findMainFile() 
-  local main_file = self:getOption("mainfile")
-  
-  -- If mainfile option was found then return mainfile and add xml suffix.
-  if main_file then
-    return path.compose(self.path, self.language, main_file .. ".xml")
-  else
-    -- If mainfile option was not found then try to find entity file and use its name.
-    local content_dir = path.compose(self.path, self.language)
-    
-    -- Lists the files in language directory.
-    local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
-    
-    -- Execute command and return the output and substitute .xml suffix for .ent.
-    local result = execCaptureOutputAsString(command)
-    
-    if result ~= "" then
-        print(result)
-      return string.gsub(result, "%.ent$", ".xml", 1)
+--  @return path to the file from current directory
+function publican:findMainFile()
+    local main_file = self:getOption("mainfile")
+
+    -- If mainfile option was found then return mainfile and add xml suffix.
+    if main_file then
+        return path.compose(self.path, self.language, main_file .. ".xml")
+    else
+        -- If mainfile option was not found then try to find entity file and use its name.
+        local content_dir = path.compose(self.path, self.language)
+
+        -- Lists the files in language directory.
+        local command = "ls " .. content_dir .. "/*.ent 2>/dev/null"
+
+        -- Execute command and return the output and substitute .xml suffix for .ent.
+        local result = execCaptureOutputAsString(command)
+
+        if result ~= "" then
+            local newString, counter = string.gsub(result, "%.ent$", ".xml", 1)
+            return newString
+        end
+
+        -- Return nil when there is not entity file.
+        return nil
     end
-    
-    -- Return nil when there is not entity file.
-    return nil
-  end
 end
 
 
@@ -160,7 +160,7 @@ end
 --
 --  @param item_name is name of value which we want to find. The name without colon.
 --  @return the value.
-function publican:getOption(item_name)  
+function publican:getOption(item_name)
   return self.options[item_name]
 end
 
@@ -172,23 +172,23 @@ end
 function publican:getAllOptions()
   return self.options
 end
-  
-  
-  
+
+
+
 --
 --- Function that finds document type and returns it. The type can be Book, Article or Set.
 --
 --  @return 'Book', 'Article' or 'Set' string according to type of book.
-function publican:getDocumentType()  
+function publican:getDocumentType()
   local default_type = "Book"
-  
-  local d_type = self:getOption("type")  
-  
+
+  local d_type = self:getOption("type")
+
   -- In case that type is not mentioned in publican.cfg, default type is used.
   if d_type == "" then
     d_type = default_type
   end
-  
+
   return d_type
 end
 
@@ -197,23 +197,23 @@ end
 --
 --  @param pattern by which options will be found.
 --  @return table with options which match the pattern in this form: key = name_of_option, value = value_of_option.
-function publican:matchOption(pattern)   
+function publican:matchOption(pattern)
   -- Go through all options and choose only those which match the pattern.
   local result_list = {}
   local found = false
-  
-  for name, value in pairs(self.options) do 
+
+  for name, value in pairs(self.options) do
     if name:match(pattern) then
       result_list[name] = value
       found = true
     end
   end
-  
+
   -- In case that there is no option which match the pattern, return nil.
-  if not found then 
+  if not found then
     return nil
   end
-  
+
   -- Return list witch only options which match the pattern.
   return result_list
 end
