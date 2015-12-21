@@ -37,15 +37,21 @@ function asciidoc.create(file_path)
 	-- Set metatable for the new object:
 	setmetatable(ascii, asciidoc)
 
-	ascii.content = asciidoc.get_content(file_path)
+	local tree = {}
+
+	asciidoc.get_content(file_path,tree)
+
+	ascii.tree = tree
 
 	-- Return the new object:
 	return ascii
 end
 
-function asciidoc.get_content(file_path)
+function asciidoc.get_content(file_path, tree)
 	print(file_path)
 	
+	tree[file_path] = {}
+
 	-- Add content of the main file to a table
 	local file_content = slurpTable(file_path)
 	
@@ -60,6 +66,8 @@ function asciidoc.get_content(file_path)
 	-- Get lines that includes other files:
 	for i,entry in ipairs(file_content) do
 		if entry:match("include::") then
+			local trimm_entry = entry:gmatch("include::(.+)%[.*%]")
+			entry = trimm_entry()
 			table.insert(includes,entry)
 			
 			-- Determine if includes consists of attribute (for example {includedir})
@@ -75,29 +83,26 @@ function asciidoc.get_content(file_path)
 		end
 	end	
 	
-	-- Replace attribute with its actual value
+	-- Replace an attribute with its actual value
 	if attribute_exists then
 		for i,entry in ipairs(includes) do
+			
 			if entry:match("{.*}") then
-				local get_attribute_name = entry:gmatch("{(%w+)}")
-				local attribute_name = get_attribute_name()
-				if attributes_values[attribute_name] then
-					includes[i] = entry:gsub("{" .. attribute_name .. "}", attributes_values[attribute_name])
-				else
-					warn("Asciidoc.lua: Attribute not found.")
+				for item in  entry:gmatch("{(%w+)}") do
+					if attributes_values[item] then
+						includes[i] = entry:gsub("{" .. item .. "}", attributes_values[item])
+					else
+						warn("Asciidoc.lua: Attribute '" .. item  .. "' not found.")
+					end
 				end
 			end
 		end
-
 	end
 	for _,entry in ipairs(includes) do
 		print(entry)
 	end
 end
 
-
-
--- function asciidoc.parse_line(line)
 
 
 
