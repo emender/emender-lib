@@ -21,8 +21,6 @@ asciidoc.__index = asciidoc
 -- Create an object
 
 function asciidoc.create(file_path)
-	print(file_path)
-	
 	-- Create a variable for the new object
 	local ascii = {}
 
@@ -30,16 +28,16 @@ function asciidoc.create(file_path)
 	if not file_path then
 		fail("Specify the main AsciiDoc file with the '--Xmain_file=<path_to_the_main_file>' variable.")
 	end
-	
+
 	-- Store the main file into as an object:
 	ascii.main_file = file_path
-	
+
 	-- Set metatable for the new object:
 	setmetatable(ascii, asciidoc)
 
 	local tree = {}
 
-	asciidoc.get_content(file_path,tree)
+	asciidoc.get_content(file_path, tree)
 
 	ascii.tree = tree
 
@@ -47,48 +45,55 @@ function asciidoc.create(file_path)
 	return ascii
 end
 
-function asciidoc.get_content(file_path, tree)
-	print(file_path)
-	
-	tree[file_path] = {}
 
+-- TODO: zanorene includy mohou mit spatne cesty ..
+
+
+function asciidoc.get_content(file_path, tree)
+    tree[file_path] = {}
+	print("start:", file_path)
 	-- Add content of the main file to a table
 	local file_content = slurpTable(file_path)
-	
+
+	-- End the function when the slurpTable returns nil - then the file does not exists or is empty.
+	if not file_content then
+		print("go up")
+		return
+	end
+
 	-- Create an empty table that will list all lines that includes other files
 	local includes = {}
-	
+
 	-- Create an empty table that will list all attributes and theirs values
 	local attributes_values = {}
-	
+
 	local attribute_exists = false
-	
+
 	-- Get lines that includes other files:
 	for i,entry in ipairs(file_content) do
-		if entry:match("include::") then
+		if entry:match("include::") and not entry:match("^//") then
 			local trimm_entry = entry:gmatch("include::(.+)%[.*%]")
 			entry = trimm_entry()
 			table.insert(includes,entry)
-			
+
 			-- Determine if includes consists of attribute (for example {includedir})
 			if entry:match("{.*}") then
 				attribute_exists = true
 			end
-		
+
 		-- Create a table with attributes and theirs values:
 		elseif entry:match("^:[^:]+:") then
 			local attr_val = entry:gmatch(":([^:]+):%s?(.*)")
 			local attribute, value = attr_val()
 			attributes_values[attribute] = value
 		end
-	end	
-	
+	end
+
 	-- Replace an attribute with its actual value
 	if attribute_exists then
 		for i,entry in ipairs(includes) do
-			
 			if entry:match("{.*}") then
-				for item in  entry:gmatch("{(%w+)}") do
+				for item in entry:gmatch("{(%w+)}") do
 					if attributes_values[item] then
 						includes[i] = entry:gsub("{" .. item .. "}", attributes_values[item])
 					else
@@ -98,9 +103,44 @@ function asciidoc.get_content(file_path, tree)
 			end
 		end
 	end
-	for _,entry in ipairs(includes) do
-		print(entry)
+
+	-- Go through all includes which are in current file
+	for _, includedFile in ipairs(includes) do
+		-- Take the path to the directory where current file is placed. Current file is the file which contains these includes.
+		local parentDir = asciidoc.trimFileName(file_path)
+
+		-- in case, that we have parent directory and included another file compose new path. New path can be used from the root directory of this book.
+		if parentDir and includedFile then
+			includedFile = path.compose(parentDir, includedFile)
+		end
+
+		-- Recursively check next file.
+		asciidoc.get_content(includedFile, tree)
 	end
+end
+
+
+--
+--
+--
+--
+--
+function asciidoc.trimFileName(filePath)
+	if not filePath then
+		return nil
+	end
+
+	if not filePath:match("/") then
+		return ""
+	end
+
+	local helpStr = filePath:reverse()
+
+	helpStr = helpStr:gsub("[^/]*/", "")
+
+	filePath = helpStr:reverse()
+	print(filePath)
+	return filePath
 end
 
 
@@ -108,6 +148,5 @@ end
 
 -- function asciidoc:get_links()
 -- 	self
--- 	
+--
 -- end
-
