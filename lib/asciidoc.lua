@@ -41,23 +41,25 @@ function asciidoc.create(file_path)
 
 	ascii.tree = tree
 
+	asciidoc.printStructure(tree, -1)
+
 	-- Return the new object:
 	return ascii
 end
 
 
--- TODO: zanorene includy mohou mit spatne cesty ..
-
-
+--
+--
+--
+--
 function asciidoc.get_content(file_path, tree)
-    tree[file_path] = {}
-	print("start:", file_path)
+    table.insert(tree, {file_path})
+
 	-- Add content of the main file to a table
 	local file_content = slurpTable(file_path)
 
 	-- End the function when the slurpTable returns nil - then the file does not exists or is empty.
 	if not file_content then
-		print("go up")
 		return
 	end
 
@@ -72,8 +74,8 @@ function asciidoc.get_content(file_path, tree)
 	-- Get lines that includes other files:
 	for i,entry in ipairs(file_content) do
 		if entry:match("include::") and not entry:match("^//") then
-			local trimm_entry = entry:gmatch("include::(.+)%[.*%]")
-			entry = trimm_entry()
+			local trim_entry = entry:gmatch("include::(.+)%[.*%]")
+			entry = trim_entry()
 			table.insert(includes,entry)
 
 			-- Determine if includes consists of attribute (for example {includedir})
@@ -115,7 +117,7 @@ function asciidoc.get_content(file_path, tree)
 		end
 
 		-- Recursively check next file.
-		asciidoc.get_content(includedFile, tree)
+		asciidoc.get_content(includedFile, tree[#tree])
 	end
 end
 
@@ -130,23 +132,33 @@ function asciidoc.trimFileName(filePath)
 		return nil
 	end
 
+	-- File is in the root directory.
 	if not filePath:match("/") then
 		return ""
 	end
 
+	-- Reverse the string because of easier pattern matching
 	local helpStr = filePath:reverse()
 
+	-- Remove the file name and reverse the path back.
 	helpStr = helpStr:gsub("[^/]*/", "")
-
 	filePath = helpStr:reverse()
-	print(filePath)
+
 	return filePath
 end
 
 
-
-
--- function asciidoc:get_links()
--- 	self
 --
--- end
+--
+--
+--
+--
+function asciidoc.printStructure(tree, level)
+	for key, value in ipairs(tree) do
+		if type(value) == "string" then
+			print(level, value)
+		elseif type(value) == "table" then
+			asciidoc.printStructure(value, level+1)
+		end
+	end
+end
