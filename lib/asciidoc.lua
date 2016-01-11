@@ -41,7 +41,7 @@ function asciidoc.create(file_path)
 
 	ascii.tree = tree
 
-	asciidoc.printStructure(tree, -1)
+	asciidoc.printStructure(tree, 0)
 
 	-- Return the new object:
 	return ascii
@@ -49,12 +49,15 @@ end
 
 
 --
+--- Function that takes main file, fetch its content and parse all includes.
+--  Then recursively goes through all includes. The output is table with files
+--  from which the documentation is composed. It stores the path to the file,
+--  content of the file, number of lines and children.
 --
---
+--  @param file_path path to the main file
+--  @param tree the table for storing information.
 --
 function asciidoc.get_content(file_path, tree)
-    table.insert(tree, {file_path})
-
 	-- Add content of the main file to a table
 	local file_content = slurpTable(file_path)
 
@@ -91,6 +94,9 @@ function asciidoc.get_content(file_path, tree)
 		end
 	end
 
+	-- Insert the file into table.
+	table.insert(tree, {["file"] = file_path, ["content"] = file_content, ["lineCount"] = #file_content, ["children"] = {}})
+
 	-- Replace an attribute with its actual value
 	if attribute_exists then
 		for i,entry in ipairs(includes) do
@@ -117,16 +123,17 @@ function asciidoc.get_content(file_path, tree)
 		end
 
 		-- Recursively check next file.
-		asciidoc.get_content(includedFile, tree[#tree])
+		asciidoc.get_content(includedFile, tree[#tree]["children"])
 	end
 end
 
 
 --
+--- Trims file name from the path to the file. Useful for building path to the files
+--  which are included.
 --
---
---
---
+--  @param filePath path which should be trimmed
+--  @return path to the directory where the file is
 function asciidoc.trimFileName(filePath)
 	if not filePath then
 		return nil
@@ -149,16 +156,19 @@ end
 
 
 --
+--- Function that prints filu structure of the current asciidoc book.
 --
---
---
---
+--  @param tree the table which contains file tree
+--  @param level when calling this function set it to the 0. Then the files
+--				in the root directory will have depth of 0.
 function asciidoc.printStructure(tree, level)
 	for key, value in ipairs(tree) do
-		if type(value) == "string" then
-			print(level, value)
-		elseif type(value) == "table" then
-			asciidoc.printStructure(value, level+1)
+		if type(value["file"]) == "string" then
+			print("Depth: " .. level, value["file"])
+
+			if not table.isEmpty(value["children"]) then
+				asciidoc.printStructure(value["children"], level+1)
+			end
 		end
 	end
 end
