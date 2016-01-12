@@ -77,7 +77,7 @@ function asciidoc.get_content(file_path, tree)
 
 	-- Get lines that includes other files:
 	for i,entry in ipairs(file_content) do
-		if entry:match("include::") and not entry:match("^//") then
+		if entry:match("include::") and not entry:match("^//") then -- skip commented includes
 			local trim_entry = entry:gmatch("include::(.+)%[.*%]")
 			entry = trim_entry()
 			table.insert(includes,entry)
@@ -177,49 +177,60 @@ end
 
 
 --
----
+--- Function that should be use for getting links from the asciidoc documentation.
+--  Only parameter which this function needs is tree of files stored in asciidoc
+--  object (created while the object was created.)
 --
---
---
+--  @param tree table with all asciidoc files
+--  @return table with links in [1]="link1", [2]=link2, ... format
 function asciidoc.getLinks(tree)
+	-- if given table is nil then return.
 	if not tree then
 		return nil
 	end
 
+	-- Prepare variables for all links and for links from current file.
 	local links = {}
 	local currentLinks = {}
 
+	-- Go through all files and parse them.
 	for i, fileInfo in ipairs(tree) do
 		if type(fileInfo["file"]) == "string" then
+			-- In case that there is file name (not empty table) parse this file
+			-- and fetch links from it.
 			tempLinks = asciidoc.findLinks(fileInfo["content"])
-
 			links = table.appendTables(links, currentLinks)
 
+			-- In case that file has at least one include in it, the recursively
+			-- call this function again,
 			if not table.isEmpty(fileInfo["children"]) then
 				asciidoc.getLinks(fileInfo["children"])
 			end
 		end
 	end
 
+	-- Return table with links
 	return links
 end
 
 
 --
+--- Function that goes through all lines in file (table where each item is
+--  one line from the file) and stores every link which occurres in the line.
 --
---
---
---
+--  @param contentTable table with content of the file.
+--  @return table which contains links
 function asciidoc.findLinks(contentTable)
 	local links = {}
 
 	for i, line in ipairs(contentTable) do
 		-- URL pattern taken from http://stackoverflow.com/a/23592008 and edited
 		local getLink = line:gmatch'(([hf][t][tp][ps]?[s]?://)(%w[-.%w]*%.)(%w+)(:?)(%d*)(/?)([%w_.~!*:@&+$/?%%#=-]*))'
-		for url, prot, subd, tld, colon, port, slash, path in getLink do
+		for url in getLink do
 			table.insert(links, url)
 		end
 	end
 
+	-- Return table with links
 	return links
 end
