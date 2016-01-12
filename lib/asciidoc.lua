@@ -42,6 +42,7 @@ function asciidoc.create(file_path)
 	ascii.tree = tree
 
 	asciidoc.printStructure(tree, 0)
+	asciidoc.getLinks(tree)
 
 	-- Return the new object:
 	return ascii
@@ -171,4 +172,54 @@ function asciidoc.printStructure(tree, level)
 			end
 		end
 	end
+end
+
+
+
+--
+---
+--
+--
+--
+function asciidoc.getLinks(tree)
+	if not tree then
+		return nil
+	end
+
+	local links = {}
+	local currentLinks = {}
+
+	for i, fileInfo in ipairs(tree) do
+		if type(fileInfo["file"]) == "string" then
+			tempLinks = asciidoc.findLinks(fileInfo["content"])
+
+			links = table.appendTables(links, currentLinks)
+
+			if not table.isEmpty(fileInfo["children"]) then
+				asciidoc.getLinks(fileInfo["children"])
+			end
+		end
+	end
+
+	return links
+end
+
+
+--
+--
+--
+--
+--
+function asciidoc.findLinks(contentTable)
+	local links = {}
+
+	for i, line in ipairs(contentTable) do
+		-- URL pattern taken from http://stackoverflow.com/a/23592008 and edited
+		local getLink = line:gmatch'(([hf][t][tp][ps]?[s]?://)(%w[-.%w]*%.)(%w+)(:?)(%d*)(/?)([%w_.~!*:@&+$/?%%#=-]*))'
+		for url, prot, subd, tld, colon, port, slash, path in getLink do
+			table.insert(links, url)
+		end
+	end
+
+	return links
 end
