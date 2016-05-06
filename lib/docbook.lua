@@ -26,7 +26,7 @@ docbook.__index = docbook
 --  @return New object. When there is some error then it returns nil.
 function docbook.create(file_path)
   -- Empty object.
-  local docb = {["readableTags"] = {"para", "title"}}
+  local docb = {["readableTags"] = {"para", "simpara", "title"}}
 
   if not file_path then
     fail("You have to set main file of docbook document.")
