@@ -1,5 +1,5 @@
 -- docbook.lua - Class that provides functions for working with docbook documents.
--- Copyright (C) 2015 Pavel Vomacka
+-- Copyright (C) 2015, 2016  Pavel Vomacka, Pavel Tisnovsky
 --
 -- This program is free software:  you can redistribute it and/or modify it
 -- under the terms of  the  GNU General Public License  as published by the
@@ -26,7 +26,7 @@ docbook.__index = docbook
 --  @return New object. When there is some error then it returns nil.
 function docbook.create(file_path)
   -- Empty object.
-  local docb = {["readableTags"] = {"para", "simpara", "title"}}
+  local docb = {["readableTags"] = {"para", "simpara", "title", "entry"}}
 
   if not file_path then
     fail("You have to set main file of docbook document.")
