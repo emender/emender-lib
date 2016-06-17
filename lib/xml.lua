@@ -191,7 +191,7 @@ end
 --
 --  @param xslt_definition
 --  @return table with output from xsl transformation.
-function xml:useXslt(xslt_definition)
+function xml:useXslt(xslt_definition, filename)
     local xinclude = ""
 
     -- Turn on xincludes.
@@ -200,18 +200,25 @@ function xml:useXslt(xslt_definition)
     end
 
     -- Declare variables.
-    local err_redirect = "2>/dev/null"
+    local err_redirect = "2> /dev/null"
     local echo_outer = "/bin/echo -e `"
     local echo_inner = "/bin/echo " .. xslt_definition
-    local xsltproc = "xsltproc " .. xinclude
+    local xsltproc = "xsltproc -nonet " .. xinclude
     local sed = "sed -e 's/\\xC2\\xA0/ /g'" -- Substitute nbsp by normal space.
     local end_of_command = "`"
 
     -- Compose command.
-    local command = echo_outer .. echo_inner .. " | " ..  xsltproc .. " - " .. self.file .. " " .. err_redirect .. " | " .. sed .. end_of_command
+    local command = echo_outer .. echo_inner .. " | " ..  xsltproc .. " - " .. filename .. " " .. err_redirect .. " | " .. sed .. end_of_command
 
+    --print(self.file)
+    --print(command)
     -- Execute command.
     return execCaptureOutputAsTable(command)
+end
+
+
+function preprocessedFileName(filename)
+    return filename .. "_xmllint.xml"
 end
 
 
@@ -220,8 +227,9 @@ end
 --
 --  @param namespace (if there is no namespace, then set this argument to empty string). For example: r=http://example.namespace.com
 --  @param xpath defines path to the elements. If namespace is defined then use namespace 'newnamespace' prefix(i.e. //newnamespace:elem/newnamespace:test).
+--  @param preprocessByXmllint set to 'true' if the input file should be preprocessed by xmllint first (to include entity file etc.)
 --  @return table where each item is content of one element. Otherwise, it returns nil.
-function xml:parseXml(xpath, namespace)
+function xml:parseXml(xpath, namespace, preprocessByXmllint)
     -- Check whether xpath parameter is set.
     if not xpath then
         return nil
@@ -240,12 +248,34 @@ function xml:parseXml(xpath, namespace)
         new_ns = ""
     end
 
+    local inputFile = self.file
+
+    if preprocessByXmllint then
+        inputFile = preprocessedFileName(self.file)
+        local command = nil
+        if self.xinclude > 0 then
+            command = "xmllint -xinclude " .. self.file .. " > " .. inputFile .. " 2> /dev/null"
+        else
+            command = "xmllint " .. self.file .. " > " .. inputFile .. " 2> /dev/null"
+        end
+        os.execute(command)
+    end
+
     local xslt_definition = "'<?xml version=\"1.0\" encoding=\"utf-8\"?><xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"" .. new_ns .. "><xsl:output method=\"text\" indent=\"yes\"/><xsl:template match=\"/\"><xsl:for-each select=\"" .. xpath .. "\"><xsl:value-of select=\".\"/>\\n</xsl:for-each></xsl:template></xsl:stylesheet>'"
 
-    local result_table = self:useXslt(xslt_definition)
+    local result_table = self:useXslt(xslt_definition, inputFile)
+    -- wanna know the result?
+    --   for _,x in ipairs(result_table) do
+    --       print(x)
+    --   end
 
     -- Remove last empty line. TODO: Edit in xslt.
     result_table[#result_table] = nil
+
+    if preprocessByXmllint then
+        --print("removing " .. inputFile)
+        os.execute("rm " .. inputFile)
+    end
 
     -- If there is no found item then return nil.
     if not result_table[1] then
@@ -472,7 +502,7 @@ end
 --
 --  @param tags table of tags from which this function parse content
 --  @return content of tags which contain readable text.
-function xml:getContentOfMoreElements(tags)
+function xml:getContentOfMoreElements(tags, preprocessByXmllint)
     local xpath = ""
 
     -- Compose xpath for find readable text.
@@ -492,7 +522,7 @@ function xml:getContentOfMoreElements(tags)
     end
 
     -- Return whole text.
-    return self:parseXml(xpath)
+    return self:parseXml(xpath, nil, preprocessByXmllint)
 end
 
 
