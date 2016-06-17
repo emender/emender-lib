@@ -254,9 +254,9 @@ function xml:parseXml(xpath, namespace, preprocessByXmllint)
         inputFile = preprocessedFileName(self.file)
         local command = nil
         if self.xinclude > 0 then
-            command = "xmllint -xinclude " .. self.file .. " > " .. inputFile .. " 2> /dev/null"
+            command = "xmllint -recover -xinclude " .. self.file .. " > " .. inputFile .. " 2> /dev/null"
         else
-            command = "xmllint " .. self.file .. " > " .. inputFile .. " 2> /dev/null"
+            command = "xmllint -recover " .. self.file .. " > " .. inputFile .. " 2> /dev/null"
         end
         os.execute(command)
     end
