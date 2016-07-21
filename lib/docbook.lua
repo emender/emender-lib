@@ -94,7 +94,7 @@ end
 -- Function that returns docbook version as a string major.minor
 -- (this one is an ugly hack)
 --
-function docbook:readDocbookVersion(filename)
+function docbook.readDocbookVersion(filename)
     local fin = io.open(filename, "r")
     -- check if file can be opened
     if not fin then
