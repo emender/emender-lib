@@ -87,3 +87,34 @@ function docbook:getReadableText(xinclude)
 
     return xmlObj:getContentOfMoreElements(self.readableTags, true)
 end
+
+
+
+--
+-- Function that returns docbook version as a string major.minor
+-- (this one is an ugly hack)
+--
+function docbook:readDocbookVersion(filename)
+    local fin = io.open(filename, "r")
+    -- check if file can be opened
+    if not fin then
+        fail("Can not open master file: **" .. filename .. "**")
+        return nil
+    end
+    for line in fin:lines() do
+        if line:find("-//OASIS//DTD DocBook XML V4.0//EN") or
+           line:find("http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd") then
+            fin:close()
+            return "4.0"
+        elseif line:find("-//OASIS//DTD DocBook XML V4.5//EN") or
+           line:find("http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd") then
+            fin:close()
+            return "4.5"
+        elseif line:find("http://docbook.org/ns/docbook.*version=.5.0") then
+            fin:close()
+            return "5.0"
+        end
+    end
+    fin:close()
+end
+
