@@ -201,14 +201,15 @@ function xml:useXslt(xslt_definition, filename)
 
     -- Declare variables.
     local err_redirect = "2> /dev/null"
-    local echo_outer = "/bin/echo -e \"`"
+    local echo_outer = "/bin/echo -e `"
     local echo_inner = "/bin/echo " .. xslt_definition
     local xsltproc = "xsltproc -nonet " .. xinclude
     local sed = "sed -e 's/\\xC2\\xA0/ /g'" -- Substitute nbsp by normal space.
-    local end_of_command = "`\""
+    local sed2 = "sed -e 's/\\*/\\&#42;/g'" -- Substitute star
+    local end_of_command = "`"
 
     -- Compose command.
-    local command = echo_outer .. echo_inner .. " | " ..  xsltproc .. " - " .. filename .. " " .. err_redirect .. " | " .. sed .. end_of_command
+    local command = echo_outer .. echo_inner .. " | " ..  xsltproc .. " - " .. filename .. " " .. err_redirect .. " | " .. sed .. " | " .. sed2 .. end_of_command
 
     --print(self.file)
     --print(command)
@@ -546,3 +547,8 @@ function xml:getWholeXMLSource()
     -- Execute command and return the output.
     return execCaptureOutputAsTable(command)
 end
+
+function xml.constructPathFromTagNames(tagNames)
+    return "//" .. table.concat(tagNames, "|//")
+end
+
