@@ -118,3 +118,50 @@ function docbook.readDocbookVersion(filename)
     fin:close()
 end
 
+function docbook.xpathSelect(selector, expression, filename)
+    return "xmlstarlet sel -N xx=\"http://docbook.org/ns/docbook\" -t -m '" .. selector .. "' -v '" .. expression .. "' -n " .. filename .. " 2>/dev/null"
+end
+
+
+
+--
+-- Get all files which are included in current documentation.
+--
+--  @return table with one item form each file.
+function docbook.getFileList(xml, fileN, language)
+    -- Handle situtaion when xml file doesn't exist.
+    if not path.file_exists(fileN) then
+        return nil
+    end
+
+    -- create xml object for document main file and turn off the xincludes.
+    local xmlObj = xml.create(fileN, 0)
+    local wholeFileList = {}
+    table.insert(wholeFileList, fileN)
+
+    -- Get content of href attribute from the main file.
+    local fileList = xmlObj:parseXml("//newnamespace:include/@href", "http://www.w3.org/2001/XInclude")
+
+    -- If there is no other includes in the current file then return list with only current file.
+    if not fileList then
+        return wholeFileList
+    end
+
+    -- Append en-US directory for each file name and store it back to the table.
+    for i, fileName in ipairs(fileList) do
+        --print("expand", fileName)
+        if not fileName:match("^" .. language) then
+            fileList[i] = language .. "/" .. fileName
+        end
+
+        local nextFiles = docbook.getFileList(xml, fileList[i], language)
+
+        if nextFiles then
+            wholeFileList = table.appendTables(wholeFileList, nextFiles)
+        end
+    end
+
+    -- Return the result table.
+    return wholeFileList
+end
+
