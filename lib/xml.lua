@@ -422,12 +422,10 @@ function xml:getEntityValue(entityName)
     end
 
     -- Compose command for parsing entity value.
-    local grep = "grep \""
-    local sed_one = "sed 's/^<!ENTITY " .. entityName:upper() .. " //'"
-    local sed_two = "sed 's/>$//'"
-    local command = print_file_cmd .. " | " .. grep .. entityName:upper() .. "\" | " .. sed_one ..  " | " .. sed_two
+    local sed = "sed -ne 's/<!ENTITY[\\t ]\\+" .. entityName:upper() .. "[\\t ]\\+[\"'\\'']\\([^\"'\\'']*\\)[\"'\\''][\\t ]\\?>.*/\\1/p'"
+    local command = print_file_cmd .. " | " .. sed
 
-    local output = string.trimString(execCaptureOutputAsString(command))
+    local output = execCaptureOutputAsString(command)
 
     -- Check whether entity was found.
     if output == "" then
