@@ -95,6 +95,12 @@ end
 -- (this one is an ugly hack)
 --
 function docbook.readDocbookVersion(filename)
+    local xmlPatterns = {
+        "-//OASIS//DTD DocBook XML V(4%.[0-5])//EN",
+        "http://www%.oasis%-open%.org/docbook/xml/(4%.[0-5])/docbookx%.dtd",
+        "http://docbook%.org/ns/docbook.*version=.(5%.[0-1])"
+    }
+
     local fin = io.open(filename, "r")
     -- check if file can be opened
     if not fin then
@@ -102,33 +108,18 @@ function docbook.readDocbookVersion(filename)
         return nil
     end
     for line in fin:lines() do
-        if line:find("-//OASIS//DTD DocBook XML V4.0//EN") or
-           line:find("http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd") then
-            fin:close()
-            return "4.0"
-        elseif line:find("-//OASIS//DTD DocBook XML V4.2//EN") or
-               line:find("http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd") then
-            fin:close()
-            return "4.3"
-        elseif line:find("-//OASIS//DTD DocBook XML V4.2//EN") or
-               line:find("http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd") then
-            fin:close()
-            return "4.3"
-        elseif line:find("-//OASIS//DTD DocBook XML V4.4//EN") or
-               line:find("http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd") then
-            fin:close()
-            return "4.4"
-        elseif line:find("-//OASIS//DTD DocBook XML V4.5//EN") or
-           line:find("http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd") then
-            fin:close()
-            return "4.5"
-        elseif line:find("http://docbook.org/ns/docbook.*version=.5.0") then
-            fin:close()
-            return "5.0"
+        for _,xmlPattern in ipairs(xmlPatterns) do
+            local version = line:match(xmlPattern)
+            if version then
+                fin:close()
+                return version
+            end
         end
     end
     fin:close()
 end
+
+
 
 function docbook.xpathSelect(selector, expression, filename)
     return "xmlstarlet sel -N xx=\"http://docbook.org/ns/docbook\" -t -m '" .. selector .. "' -v '" .. expression .. "' -n " .. filename .. " 2>/dev/null"
