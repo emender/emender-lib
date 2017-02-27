@@ -106,7 +106,11 @@ function docbook.readDocbookVersion(filename)
            line:find("http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd") then
             fin:close()
             return "4.0"
-        elseif line:find("-//OASIS//DTD DocBook XML V4.3//EN") or
+        elseif line:find("-//OASIS//DTD DocBook XML V4.2//EN") or
+               line:find("http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd") then
+            fin:close()
+            return "4.3"
+        elseif line:find("-//OASIS//DTD DocBook XML V4.2//EN") or
                line:find("http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd") then
             fin:close()
             return "4.3"
