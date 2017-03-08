@@ -34,6 +34,7 @@ checkVersion("Test_Book_4_4_b.xml", "4.4")
 checkVersion("Test_Book_4_5_b.xml", "4.5")
 
 checkVersion("Test_Book_5_0.xml", "5.0")
+checkVersion("Test_Book_5_0_B.xml", "5.0")
 
 if not ok then
     os.exit(1)
