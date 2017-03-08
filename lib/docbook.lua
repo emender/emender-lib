@@ -98,8 +98,10 @@ function docbook.readDocbookVersion(filename)
     local xmlPatterns = {
         "-//OASIS//DTD DocBook XML V(4%.[0-5])//EN",
         "http://www%.oasis%-open%.org/docbook/xml/(4%.[0-5])/docbookx%.dtd",
-        [[<book%s+xmlns=["']http://docbook%.org/ns/docbook["']%s+version=["'](5%.[0-1])["']>]],
-        [[<book%s+version=["'](5%.[0-1])["']%s+xmlns=["']http://docbook%.org/ns/docbook["']>]]
+        [[<book .*xmlns=["']http://docbook%.org/ns/docbook["'].+version=["'](5%.[0-1])["'].*>]],
+        [[<book .*version=["'](5%.[0-1])["'].+xmlns=["']http://docbook%.org/ns/docbook["'].*>]],
+        [[<info .*xmlns=["']http://docbook%.org/ns/docbook["'].+version=["'](5%.[0-1])["'].*>]],
+        [[<info .*version=["'](5%.[0-1])["'].+xmlns=["']http://docbook%.org/ns/docbook["'].*>]]
     }
 
     local fin = io.open(filename, "r")
