@@ -39,6 +39,9 @@ checkVersion("Test_Book_5_0_C.xml", "5.0")
 checkVersion("Test_Book_5_0_D.xml", "5.0")
 checkVersion("Test_Book_5_0_E.xml", "5.0")
 
+checkVersion("Test_Book_5_0_article.xml", "5.0")
+checkVersion("Test_Book_5_0_set.xml", "5.0")
+
 if not ok then
     os.exit(1)
 end
