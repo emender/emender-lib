@@ -101,7 +101,11 @@ function docbook.readDocbookVersion(filename)
         [[<book .*xmlns=["']http://docbook%.org/ns/docbook["'].+version=["'](5%.[0-1])["'].*>]],
         [[<book .*version=["'](5%.[0-1])["'].+xmlns=["']http://docbook%.org/ns/docbook["'].*>]],
         [[<info .*xmlns=["']http://docbook%.org/ns/docbook["'].+version=["'](5%.[0-1])["'].*>]],
-        [[<info .*version=["'](5%.[0-1])["'].+xmlns=["']http://docbook%.org/ns/docbook["'].*>]]
+        [[<info .*version=["'](5%.[0-1])["'].+xmlns=["']http://docbook%.org/ns/docbook["'].*>]],
+        [[<article .*xmlns=["']http://docbook%.org/ns/docbook["'].+version=["'](5%.[0-1])["'].*>]],
+        [[<article .*version=["'](5%.[0-1])["'].+xmlns=["']http://docbook%.org/ns/docbook["'].*>]],
+        [[<set .*xmlns=["']http://docbook%.org/ns/docbook["'].+version=["'](5%.[0-1])["'].*>]],
+        [[<set .*version=["'](5%.[0-1])["'].+xmlns=["']http://docbook%.org/ns/docbook["'].*>]]
     }
 
     local fin = io.open(filename, "r")
